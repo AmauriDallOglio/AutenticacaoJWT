@@ -1,6 +1,4 @@
 using AutenticacaoJWT.Api.Configuracao;
-using AutenticacaoJWT.Aplicacao.Servico;
-using AutenticacaoJWT.Aplicacao.ServicoInterface;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using AutenticacaoJWT.Infra.Repositorio;
@@ -39,7 +37,7 @@ namespace AutenticacaoJWT.Api
                     };
                 });
 
-            builder.Services.AddScoped<IUsuarioServico, UsuarioServico>();
+ 
             builder.Services.AddControllers();
 
             builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();

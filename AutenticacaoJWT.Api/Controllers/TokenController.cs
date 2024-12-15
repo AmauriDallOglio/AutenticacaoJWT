@@ -1,6 +1,5 @@
 ﻿using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Aplicacao.Request;
-using AutenticacaoJWT.Aplicacao.ServicoInterface;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,15 +11,15 @@ namespace AutenticacaoJWT.Api.Controllers
     public class TokenController : ControllerBase
     {
 
-        private readonly IUsuarioServico _IUsuarioServico;
+ 
         private readonly IUsuarioRepositorio _IUsuarioRepositorio;
         private static readonly Dictionary<string, string> _tokenUsuario = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _codigoUsuario = new Dictionary<string, string>();
 
 
-        public TokenController(IUsuarioServico iUsuarioServico, IUsuarioRepositorio usuarioRepositorio)
+        public TokenController( IUsuarioRepositorio usuarioRepositorio)
         {
-            _IUsuarioServico = iUsuarioServico;
+ 
             _IUsuarioRepositorio = usuarioRepositorio;
 
         }

@@ -14,7 +14,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
                 new Usuario
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Amauri1",
+                    Nome = "Amauri1",
                     Email = "amauri1@amauri.com",
                     Token = "",
                     Codigo = "",
@@ -23,7 +23,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
                 new Usuario
                 {
                     Id = Guid.NewGuid().ToString(),
-                    Name = "Amauri2",
+                    Nome = "Amauri2",
                     Email = "amauri2@amauri.com",
                     Token = "",
                     Codigo = "",
