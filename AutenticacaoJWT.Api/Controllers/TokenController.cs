@@ -1,7 +1,7 @@
 ﻿using AutenticacaoJWT.Api.Configuracao;
-using AutenticacaoJWT.Aplicacao.Dto;
-using AutenticacaoJWT.Aplicacao.DTO;
+using AutenticacaoJWT.Aplicacao.Request;
 using AutenticacaoJWT.Aplicacao.ServicoInterface;
+using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,18 +12,22 @@ namespace AutenticacaoJWT.Api.Controllers
     public class TokenController : ControllerBase
     {
 
-        private readonly IUsuarioServico _usuarioServico;
-        private static readonly Dictionary<string, string> _refreshTokens = new Dictionary<string, string>();
+        private readonly IUsuarioServico _IUsuarioServico;
+        private readonly IUsuarioRepositorio _IUsuarioRepositorio;
+        private static readonly Dictionary<string, string> _tokenUsuario = new Dictionary<string, string>();
+        private static readonly Dictionary<string, string> _codigoUsuario = new Dictionary<string, string>();
 
 
-        public TokenController( IUsuarioServico usuarioServico)
+        public TokenController(IUsuarioServico iUsuarioServico, IUsuarioRepositorio usuarioRepositorio)
         {
-            _usuarioServico = usuarioServico;
+            _IUsuarioServico = iUsuarioServico;
+            _IUsuarioRepositorio = usuarioRepositorio;
+
         }
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public IActionResult Login([FromBody] LoginDTO loginRequest)
+        public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
             if (string.IsNullOrWhiteSpace(loginRequest.Email))
                 throw new ArgumentException("Email não pode ser vazio ou nulo.", nameof(loginRequest.Email));
@@ -32,42 +36,48 @@ namespace AutenticacaoJWT.Api.Controllers
                 throw new ArgumentException("Senha não pode ser vazio ou nulo.", nameof(loginRequest.Senha));
 
 
-            // Valida as credenciais
-            if (!_usuarioServico.ValidarCredenciais(loginRequest.Email, loginRequest.Senha))
+            var usuario = _IUsuarioRepositorio.ObterUsuarioPorEmail(loginRequest.Email);
+
+            if (usuario is null)
             {
                 return Unauthorized(new { Message = "Credenciais inválidas" });
             }
+            else
+            {
+                if(usuario.Equals(loginRequest.Senha))
+                {
+                    return Unauthorized(new { Message = "Credenciais inválidas" });
+                }
+            }
 
-            // Gera o token JWT
-            var token = new SwaggerConfigracao().GerarJwtToken(loginRequest.Email);
-            _refreshTokens[loginRequest.Email] = token;
+            var token = new TokenConfigracao().GerarJwtToken(loginRequest.Email);
+            var codigo = new TokenConfigracao().GerarRefreshToken();
 
-            return Ok(new { Token = token });
+            usuario.UltimoAcesso = DateTime.Now;
+            usuario.Token = token;
+            usuario.Codigo = codigo;
+
+            return Ok(new { usuario });
         }
 
 
         [AllowAnonymous]
         [HttpPost("RefreshToken")]
-        public IActionResult RefreshToken([FromBody] RefreshTokenDTO refreshTokenDTO)
+        public IActionResult RefreshToken([FromBody] TokenRequest refreshTokenDTO)
         {
-            // Verifica se o refresh token é válido
-            var userEmail = _refreshTokens.FirstOrDefault(x => x.Value == refreshTokenDTO.Token).Key;
-
-            if (string.IsNullOrEmpty(userEmail))
+            var email = _tokenUsuario.FirstOrDefault(x => x.Value == refreshTokenDTO.Token).Key;
+            if (string.IsNullOrEmpty(email))
             {
-                return Unauthorized(new { Message = "Refresh token inválido ou expirado" });
+                return Unauthorized(new { Message = "Token inválido!" });
             }
 
-            // Gera um novo access token
-            var newAccessToken = new SwaggerConfigracao().GerarJwtToken(userEmail);
-            var newRefreshToken = new SwaggerConfigracao().GerarRefreshToken();
+            var token = new TokenConfigracao().GerarJwtToken(email);
+            var codigo = new TokenConfigracao().GerarRefreshToken();
 
-            // Atualiza o refresh token armazenado
-            _refreshTokens[userEmail] = newRefreshToken;
+            _tokenUsuario[email] = token; 
+            _codigoUsuario[email] = codigo;
 
-            return Ok(new { AccessToken = newAccessToken, RefreshToken = newRefreshToken });
+            return Ok(new { AccessToken = token, RefreshToken = codigo });
         }
-
     }
-
 }

@@ -1,6 +1,9 @@
 using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Aplicacao.Servico;
 using AutenticacaoJWT.Aplicacao.ServicoInterface;
+using AutenticacaoJWT.Dominio.Entidade;
+using AutenticacaoJWT.Dominio.InterfaceRepositorio;
+using AutenticacaoJWT.Infra.Repositorio;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 
@@ -18,7 +21,7 @@ namespace AutenticacaoJWT.Api
             builder.Services.AddSwaggerGen();
 
 
-            var chave = new SwaggerConfigracao().CodigoChave();
+            var chave = new TokenConfigracao().CodigoChave();
 
             // Configuração de autenticação JWT
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -39,8 +42,8 @@ namespace AutenticacaoJWT.Api
             builder.Services.AddScoped<IUsuarioServico, UsuarioServico>();
             builder.Services.AddControllers();
 
-
-
+            builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+            builder.Services.AddTransient<Usuario>();
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())

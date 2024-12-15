@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AutenticacaoJWT.Api.Configuracao
 {
-    internal sealed class SwaggerConfigracao
+    internal sealed class TokenConfigracao
     {
         private readonly string secretKey = "SuperSecretKey@1234567890123456abcdefghijlmn";
         private readonly string _issuer = "JwtInMemoryAuth";
@@ -34,6 +34,7 @@ namespace AutenticacaoJWT.Api.Configuracao
             var claims = new[]
             {
                 new Claim("Email", email),
+                new Claim("AppId", "appId"),  // Identifica o aplicativo
                 new Claim("Nome", "amauri"),  // Nome do usuário
                 new Claim("Id", "123456"),  // ID do usuário
                 new Claim("Usuario", "User"),  // Papel do usuário
@@ -61,8 +62,10 @@ namespace AutenticacaoJWT.Api.Configuracao
                 rng.GetBytes(randomBytes);
             }
 
-            return Convert.ToBase64String(randomBytes); // O refresh token pode ser uma string codificada em base64
+            return Convert.ToBase64String(randomBytes);
         }
+
+
 
     }
 }

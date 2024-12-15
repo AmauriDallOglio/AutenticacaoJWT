@@ -10,8 +10,4 @@
     <ProjectReference Include="..\AutenticacaoJWT.Dominio\AutenticacaoJWT.Dominio.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="DTO\" />
-  </ItemGroup>
-
 </Project>
