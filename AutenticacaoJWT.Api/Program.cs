@@ -17,7 +17,7 @@ namespace AutenticacaoJWT.Api
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.InformacaoCabecalhoApi();
 
             var chave = new TokenConfigracao().CodigoChave();
 
