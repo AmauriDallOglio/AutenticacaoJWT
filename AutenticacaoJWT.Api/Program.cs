@@ -2,8 +2,6 @@ using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using AutenticacaoJWT.Infra.Repositorio;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 
 namespace AutenticacaoJWT.Api
 {
@@ -18,26 +16,12 @@ namespace AutenticacaoJWT.Api
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.InformacaoCabecalhoApi();
-
-            var chave = new TokenConfigracao().CodigoChave();
-
-            // Configuração de autenticação JWT
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        ValidIssuer = "JwtInMemoryAuth",
-                        ValidAudience = "JwtInMemoryAuth",
-                        IssuerSigningKey = new SymmetricSecurityKey(chave)
-                    };
-                });
-
+            builder.Services.VersionamentoApi();
+            builder.Services.BotaoAutorizacaoToken();
+            builder.Services.ConfiguracaoServicesJWT();
  
+
+
             builder.Services.AddControllers();
 
             builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
@@ -52,7 +36,7 @@ namespace AutenticacaoJWT.Api
             app.UseHttpsRedirection();
             app.UseAuthorization();
             app.MapControllers();
-            app.UseMiddleware<TokenRenewalMiddleware>();
+            app.UseMiddleware<MiddlewareError>();
 
             app.Run();
         }
