@@ -29,28 +29,28 @@ namespace AutenticacaoJWT.Api.Controllers
         public IActionResult Login([FromBody] LoginRequest loginRequest)
         {
             if (string.IsNullOrWhiteSpace(loginRequest.Email))
-                throw new ArgumentException("Email não pode ser vazio ou nulo.", nameof(loginRequest.Email));
+                throw new ArgumentException("E-mail não informado ", nameof(loginRequest.Email));
 
             if (string.IsNullOrWhiteSpace(loginRequest.Senha))
-                throw new ArgumentException("Senha não pode ser vazio ou nulo.", nameof(loginRequest.Senha));
+                throw new ArgumentException("Senha não informada", nameof(loginRequest.Senha));
 
 
-            var usuario = _IUsuarioRepositorio.ObterUsuarioPorEmail(loginRequest.Email);
+            var usuario = _IUsuarioRepositorio.ObterUsuarioPorEmail(loginRequest.Email, loginRequest.Senha);
 
             if (usuario is null)
             {
-                return Unauthorized(new { Message = "Credenciais inválidas" });
+                return Unauthorized(new { Message = "Usuário inválido" });
             }
             else
             {
                 if(usuario.Equals(loginRequest.Senha))
                 {
-                    return Unauthorized(new { Message = "Credenciais inválidas" });
+                    return Unauthorized(new { Message = "Acesso não permitido" });
                 }
             }
 
-            var token = new TokenConfigracao().GerarJwtToken(loginRequest.Email);
-            var codigo = new TokenConfigracao().GerarRefreshToken();
+            var token = new TokenConfiguracao().GerarJwtToken(loginRequest.Email);
+            var codigo = new TokenConfiguracao().GerarRefreshToken();
 
             usuario.UltimoAcesso = DateTime.Now;
             usuario.Token = token;
@@ -70,8 +70,8 @@ namespace AutenticacaoJWT.Api.Controllers
                 return Unauthorized(new { Message = "Token inválido!" });
             }
 
-            var token = new TokenConfigracao().GerarJwtToken(email);
-            var codigo = new TokenConfigracao().GerarRefreshToken();
+            var token = new TokenConfiguracao().GerarJwtToken(email);
+            var codigo = new TokenConfiguracao().GerarRefreshToken();
 
             _tokenUsuario[email] = token; 
             _codigoUsuario[email] = codigo;

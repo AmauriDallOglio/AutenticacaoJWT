@@ -6,7 +6,7 @@ namespace AutenticacaoJWT.Dominio.InterfaceRepositorio
     {
         void AdicionarUsuario(Usuario novoUsuario);
         List<Usuario> ObterTodosUsuarios();
-        Usuario ObterUsuarioPorEmail(string email);
-        bool UsuarioExiste(string email);
+        Usuario ObterUsuarioPorEmail(string email, string senha);
+        bool UsuarioExiste(string email, string senha);
     }
 }

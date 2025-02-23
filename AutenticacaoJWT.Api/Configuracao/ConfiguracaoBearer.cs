@@ -100,8 +100,8 @@ namespace AutenticacaoJWT.Api.Configuracao
 
         public static void ConfiguracaoServicesJWT(this IServiceCollection services)
         {
-            var codigoSecret = new TokenConfigracao().CodigoSecret();
-            var chave = new TokenConfigracao().CodigoChave();
+            var codigoSecret = new TokenConfiguracao().CodigoSecret();
+            var chave = new TokenConfiguracao().CodigoChave();
 
 
  

@@ -1,18 +1,19 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using AutenticacaoJWT.Dominio.Entidade;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
 namespace AutenticacaoJWT.Api.Configuracao
 {
-    internal sealed class TokenConfigracao
+    public sealed class TokenConfiguracao
     {
-        private readonly string secretKey = "SuperSecretKey@1234567890123456abcdefghijlmn";
+        private readonly string _secretKey = "SuperSecretKey@1234567890123456abcdefghijlmn";
         private readonly string _issuer = "JwtInMemoryAuth";
         private readonly string _audience = "JwtInMemoryAuth";
         public byte[] CodigoChave()
         {
-            byte[] chave = Encoding.UTF8.GetBytes(secretKey);
+            byte[] chave = Encoding.UTF8.GetBytes(_secretKey);
             if (chave.Length < 32)
             {
                 throw new Exception($"A chave precisa ter pelo menos 32 bytes. Chave atual: {chave.Length} bytes.");
@@ -22,22 +23,22 @@ namespace AutenticacaoJWT.Api.Configuracao
 
         public string CodigoSecret()
         {
-            return secretKey;
+            return _secretKey;
         }
 
-        public string GerarJwtToken(string email)
+        public string GerarJwtToken(Usuario usuario)
         {
-            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
  
 
             var claims = new[]
             {
-                new Claim("Email", email),
+                new Claim("Email", usuario.Email),
                 new Claim("AppId", "appId"),  // Identifica o aplicativo
-                new Claim("Nome", "amauri"),  // Nome do usuário
-                new Claim("Id", "123456"),  // ID do usuário
-                new Claim("Usuario", "User"),  // Papel do usuário
+                new Claim("Nome", usuario.Nome),  // Nome do usuário
+                new Claim("Id", usuario.Id),  // ID do usuário
+                new Claim("Codigo", usuario.Codigo),  // Papel do usuário
                 new Claim("CustomClaim", "CustomValue"), // Claim personalizada
                 new Claim("DateCreated", DateTime.Now.ToString()),  // Data de criação
                 new Claim("Permissions", "read,write") // Permissões personalizadas

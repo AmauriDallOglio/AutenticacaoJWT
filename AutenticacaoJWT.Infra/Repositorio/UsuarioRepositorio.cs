@@ -16,6 +16,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
                     Id = Guid.NewGuid().ToString(),
                     Nome = "Amauri1",
                     Email = "amauri1@amauri.com",
+                    Senha = "123456",
                     Token = "",
                     Codigo = "",
                     Aplicativo = ""
@@ -25,6 +26,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
                     Id = Guid.NewGuid().ToString(),
                     Nome = "Amauri2",
                     Email = "amauri2@amauri.com",
+                    Senha = "123456",
                     Token = "",
                     Codigo = "",
                     Aplicativo = ""
@@ -34,7 +36,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
 
         public void AdicionarUsuario(Usuario novoUsuario)
         {
-            if (!UsuarioExiste(novoUsuario.Email))
+            if (!UsuarioExiste(novoUsuario.Email, novoUsuario.Senha))
             {
                 _usuarios.Add(novoUsuario);
             }
@@ -49,18 +51,18 @@ namespace AutenticacaoJWT.Infra.Repositorio
             return _usuarios;
         }
 
-        public Usuario ObterUsuarioPorEmail(string email)
+        public Usuario ObterUsuarioPorEmail(string email, string senha)
         {
-            var usuario = _usuarios.FirstOrDefault(u => u.Email == email);
+            var usuario = _usuarios.FirstOrDefault(u => u.Email == email && u.Senha == senha);
             if (usuario == null)
                 throw new Exception($"Usuário com o e-mail {email} não encontrado.");
 
             return usuario;
         }
 
-        public bool UsuarioExiste(string email)
+        public bool UsuarioExiste(string email, string senha)
         {
-            return _usuarios.Any(u => u.Email == email);
+            return _usuarios.Any(u => u.Email == email && u.Senha == senha);
         }
     }
 }
