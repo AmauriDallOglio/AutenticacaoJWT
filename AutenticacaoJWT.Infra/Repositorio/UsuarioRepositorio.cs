@@ -9,41 +9,39 @@ namespace AutenticacaoJWT.Infra.Repositorio
 
         public UsuarioRepositorio()
         {
-            _usuarios = new List<Usuario>
+            if (_usuarios == null)
             {
-                new Usuario
+                _usuarios = new List<Usuario>
                 {
-                    Id = Guid.NewGuid().ToString(),
-                    Nome = "Amauri1",
-                    Email = "amauri1@amauri.com",
-                    Senha = "123456",
-                    Token = "",
-                    Codigo = "",
-                    Aplicativo = ""
-                },
-                new Usuario
-                {
-                    Id = Guid.NewGuid().ToString(),
-                    Nome = "Amauri2",
-                    Email = "amauri2@amauri.com",
-                    Senha = "123456",
-                    Token = "",
-                    Codigo = "",
-                    Aplicativo = ""
-                }
-            };
+                    new Usuario
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Nome = "Amauri1",
+                        Email = "amauri1@amauri.com",
+                        Senha = "123456",
+                        Token = "",
+                        Refresh = "",
+                        Aplicativo = ""
+                    },
+                    new Usuario
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        Nome = "Amauri2",
+                        Email = "amauri2@amauri.com",
+                        Senha = "123456",
+                        Token = "",
+                        Refresh = "",
+                        Aplicativo = ""
+                    }
+                };
+            }
         }
 
         public void AdicionarUsuario(Usuario novoUsuario)
         {
-            if (!UsuarioExiste(novoUsuario.Email, novoUsuario.Senha))
-            {
+  
                 _usuarios.Add(novoUsuario);
-            }
-            else
-            {
-                throw new Exception($"Usuário com o e-mail {novoUsuario.Email} já existe.");
-            }
+
         }
 
         public List<Usuario> ObterTodosUsuarios()
@@ -51,7 +49,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
             return _usuarios;
         }
 
-        public Usuario ObterUsuarioPorEmail(string email, string senha)
+        public Usuario ObterUsuarioPorEmailSenha(string email, string senha)
         {
             var usuario = _usuarios.FirstOrDefault(u => u.Email == email && u.Senha == senha);
             if (usuario == null)
@@ -60,9 +58,27 @@ namespace AutenticacaoJWT.Infra.Repositorio
             return usuario;
         }
 
-        public bool UsuarioExiste(string email, string senha)
+        public Usuario? ObterPorTokenRefresh(string refresh)
         {
-            return _usuarios.Any(u => u.Email == email && u.Senha == senha);
+            Usuario? usuario = _usuarios.FirstOrDefault(u => u.Refresh == refresh);
+            return usuario;
         }
+
+
+        public Usuario Atualizar(Usuario usuarioAtualizado)
+        {
+            var usuario = _usuarios.FirstOrDefault(u => u.Id == usuarioAtualizado.Id);
+            if (usuario != null)
+            {
+                usuario.Nome = usuarioAtualizado.Nome;
+                usuario.Email = usuarioAtualizado.Email;
+                usuario.Senha = usuarioAtualizado.Senha;
+                usuario.Token = usuarioAtualizado.Token;
+                usuario.Refresh = usuarioAtualizado.Refresh;
+                usuario.Aplicativo = usuarioAtualizado.Aplicativo;
+            }
+            return usuario;
+        }
+
     }
 }

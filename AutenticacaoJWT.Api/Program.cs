@@ -1,4 +1,6 @@
 using AutenticacaoJWT.Api.Configuracao;
+using AutenticacaoJWT.Aplicacao.IServico;
+using AutenticacaoJWT.Aplicacao.Servico;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using AutenticacaoJWT.Infra.Repositorio;
@@ -24,8 +26,12 @@ namespace AutenticacaoJWT.Api
 
             builder.Services.AddControllers();
 
-            builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
-            builder.Services.AddTransient<Usuario>();
+            builder.Services.AddTransient<IUsuarioRepositorio, UsuarioRepositorio>();
+            builder.Services.AddScoped<ITokenServico, TokenServico>();
+            builder.Services.AddScoped<ITokenConfiguracaoServico, TokenConfiguracaoServico>();
+
+            builder.Services.AddScoped<Usuario>();
+    
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())

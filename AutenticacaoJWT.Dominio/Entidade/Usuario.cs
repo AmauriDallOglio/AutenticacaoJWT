@@ -7,7 +7,7 @@
         public string Email { get; set; } = string.Empty;
         public string Senha { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
-        public string Codigo { get; set; } = string.Empty;
+        public string Refresh { get; set; } = string.Empty;
         public string Aplicativo { get; set; } = string.Empty;
         public DateTime UltimoAcesso { get; set; }
 
@@ -19,10 +19,10 @@
             return;
         }
 
-        public Usuario AtualizaTokenRefresh(string token, string codigo)
+        public Usuario AtualizaTokenRefresh(string token, string refresh)
         {
             Token = token;
-            Codigo = codigo;
+            Refresh = refresh;
             InformaUltimoAcesso();
             return this;
         }

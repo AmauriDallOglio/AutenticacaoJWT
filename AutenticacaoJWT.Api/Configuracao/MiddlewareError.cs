@@ -38,7 +38,7 @@ namespace AutenticacaoJWT.Api.Configuracao
                     PropertyNameCaseInsensitive = true
                 });
 
-                if (refreshTokenDto != null && !string.IsNullOrEmpty(refreshTokenDto.Token))
+                if (refreshTokenDto != null && !string.IsNullOrEmpty(refreshTokenDto.Refresh))
                 {
 
 

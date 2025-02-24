@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutenticacaoJWT.Aplicacao.Servico;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -100,8 +101,8 @@ namespace AutenticacaoJWT.Api.Configuracao
 
         public static void ConfiguracaoServicesJWT(this IServiceCollection services)
         {
-            var codigoSecret = new TokenConfiguracao().CodigoSecret();
-            var chave = new TokenConfiguracao().CodigoChave();
+            var codigoSecret = new TokenConfiguracaoServico().CodigoSecret();
+            var chave = new TokenConfiguracaoServico().CodigoChave();
 
 
  

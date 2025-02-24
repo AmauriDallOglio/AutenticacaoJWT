@@ -1,14 +1,14 @@
-﻿using AutenticacaoJWT.Api.Configuracao;
+﻿using AutenticacaoJWT.Aplicacao.IServico;
 using AutenticacaoJWT.Aplicacao.Request;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 
 namespace AutenticacaoJWT.Aplicacao.Servico
 {
-    public class TokenServico(IUsuarioRepositorio usuarioRepositorio, TokenConfiguracao tokenConfiguracao)
+    public class TokenServico(IUsuarioRepositorio usuarioRepositorio, ITokenConfiguracaoServico iTokenConfiguracaoServico) : ITokenServico
     {
         public readonly IUsuarioRepositorio _IUsuarioRepositorio = usuarioRepositorio;
-        public readonly TokenConfiguracao _TokenConfiguracao = tokenConfiguracao;
+        public readonly ITokenConfiguracaoServico _ITokenConfiguracaoServico = iTokenConfiguracaoServico;
 
         public Usuario GerarToken(LoginRequest loginRequest)
         {
@@ -17,7 +17,8 @@ namespace AutenticacaoJWT.Aplicacao.Servico
 
             if (string.IsNullOrWhiteSpace(loginRequest.Senha))
                 throw new ArgumentException("Senha não informada", nameof(loginRequest.Senha));
-            Usuario usuario = _IUsuarioRepositorio.ObterUsuarioPorEmail(loginRequest.Email, loginRequest.Senha);
+
+            Usuario usuario = _IUsuarioRepositorio.ObterUsuarioPorEmailSenha(loginRequest.Email, loginRequest.Senha);
 
             if (usuario is null)
             {
@@ -31,12 +32,31 @@ namespace AutenticacaoJWT.Aplicacao.Servico
                 }
             }
 
-            string token = _TokenConfiguracao.GerarJwtToken(usuario);
-            string codigo = _TokenConfiguracao.GerarRefreshToken();
+            string token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
+            string refresh = _ITokenConfiguracaoServico.GerarRefreshToken();
  
-            usuario.AtualizaTokenRefresh(token, codigo);
+            usuario.AtualizaTokenRefresh(token, refresh);
+
+            _IUsuarioRepositorio.Atualizar(usuario);
 
             return  usuario;
+        }
+
+
+        public Usuario GerarRefreshToken(TokenRequest tokenRequest)
+        {
+            Usuario? usuario = _IUsuarioRepositorio.ObterPorTokenRefresh(tokenRequest.Refresh);
+            if (usuario is null)
+            {
+                throw new ArgumentException("Acesso não permitido, token inválido", nameof(tokenRequest.Refresh));
+          
+            }
+
+            var token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
+            var codigo = _ITokenConfiguracaoServico.GerarRefreshToken();
+
+            usuario.AtualizaTokenRefresh(token, codigo);
+            return usuario;
         }
     }
 }
