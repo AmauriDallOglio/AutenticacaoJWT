@@ -1,5 +1,7 @@
 ﻿using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
+using AutenticacaoJWT.Infra.Contexto;
+using Microsoft.EntityFrameworkCore;
 
 namespace AutenticacaoJWT.Infra.Repositorio
 {
@@ -7,8 +9,12 @@ namespace AutenticacaoJWT.Infra.Repositorio
     {
         private readonly List<Usuario> _usuarios;
 
-        public UsuarioRepositorio()
+        private readonly GenericoContexto _context;
+
+        public UsuarioRepositorio(GenericoContexto context)
         {
+            _context = context;
+
             if (_usuarios == null)
             {
                 _usuarios = new List<Usuario>
@@ -35,8 +41,10 @@ namespace AutenticacaoJWT.Infra.Repositorio
                     }
                 };
             }
+
         }
 
+    
         public void AdicionarUsuario(Usuario novoUsuario)
         {
   
@@ -49,11 +57,10 @@ namespace AutenticacaoJWT.Infra.Repositorio
             return _usuarios;
         }
 
-        public Usuario ObterUsuarioPorEmailSenha(string email, string senha)
+        public async Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha)
         {
-            var usuario = _usuarios.FirstOrDefault(u => u.Email == email && u.Senha == senha);
-            if (usuario == null)
-                throw new Exception($"Usuário com o e-mail {email} não encontrado.");
+            //var usuario = _usuarios.FirstOrDefault(u => u.Email == email && u.Senha == senha);
+            Usuario? usuario = _context.UsuarioDb.FirstOrDefaultAsync(u => u.Email == email && u.Senha == senha).Result;
 
             return usuario;
         }

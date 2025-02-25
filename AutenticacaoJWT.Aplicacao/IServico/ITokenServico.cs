@@ -5,7 +5,7 @@ namespace AutenticacaoJWT.Aplicacao.IServico
 {
     public interface ITokenServico
     {
-        Usuario GerarToken(LoginRequest loginRequest);
+        Task<Usuario> GerarToken(LoginRequest loginRequest, CancellationToken cancellationToken);
         Usuario GerarRefreshToken(TokenRequest tokenRequest);
     }
 }

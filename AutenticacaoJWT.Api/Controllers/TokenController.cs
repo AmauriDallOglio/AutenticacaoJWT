@@ -29,9 +29,9 @@ namespace AutenticacaoJWT.Api.Controllers
 
         [AllowAnonymous]
         [HttpPost("Login")]
-        public IActionResult Login([FromBody] Aplicacao.Request.LoginRequest loginRequest)
+        public async Task<IActionResult> Login([FromBody] Aplicacao.Request.LoginRequest loginRequest, CancellationToken cancellationToken)
         {
-            Usuario usuario = _ITokenServico.GerarToken(loginRequest);
+            Usuario usuario = await _ITokenServico.GerarToken(loginRequest, cancellationToken);
             return Ok(new { usuario });
         }
 

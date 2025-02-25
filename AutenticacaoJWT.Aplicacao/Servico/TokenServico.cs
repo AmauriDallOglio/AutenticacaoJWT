@@ -5,12 +5,13 @@ using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 
 namespace AutenticacaoJWT.Aplicacao.Servico
 {
-    public class TokenServico(IUsuarioRepositorio usuarioRepositorio, ITokenConfiguracaoServico iTokenConfiguracaoServico) : ITokenServico
+    public class TokenServico(IGenericoRepositorio<Usuario> iGenericoRepositorioUsuario, IUsuarioRepositorio usuarioRepositorio, ITokenConfiguracaoServico iTokenConfiguracaoServico) : ITokenServico
     {
+        public readonly IGenericoRepositorio<Usuario> _IGenericoRepositorioUsuario = iGenericoRepositorioUsuario;
         public readonly IUsuarioRepositorio _IUsuarioRepositorio = usuarioRepositorio;
         public readonly ITokenConfiguracaoServico _ITokenConfiguracaoServico = iTokenConfiguracaoServico;
 
-        public Usuario GerarToken(LoginRequest loginRequest)
+        public async Task<Usuario> GerarToken(LoginRequest loginRequest, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(loginRequest.Email))
                 throw new ArgumentException("E-mail não informado ", nameof(loginRequest.Email));
@@ -18,8 +19,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
             if (string.IsNullOrWhiteSpace(loginRequest.Senha))
                 throw new ArgumentException("Senha não informada", nameof(loginRequest.Senha));
 
-            Usuario usuario = _IUsuarioRepositorio.ObterUsuarioPorEmailSenha(loginRequest.Email, loginRequest.Senha);
-
+            Usuario? usuario = await _IUsuarioRepositorio.ObterUsuarioPorEmailSenhaAsync(loginRequest.Email, loginRequest.Senha);
             if (usuario is null)
             {
                 throw new ArgumentException("Usuário inválido ", nameof(loginRequest.Email));
@@ -37,7 +37,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
  
             usuario.AtualizaTokenRefresh(token, refresh);
 
-            _IUsuarioRepositorio.Atualizar(usuario);
+            await _IGenericoRepositorioUsuario.EditarAsync(usuario, cancellationToken);
 
             return  usuario;
         }

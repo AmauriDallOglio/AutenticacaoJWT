@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AutenticacaoJWT.Dominio\AutenticacaoJWT.Dominio.csproj" />
+    <ProjectReference Include="..\AutenticacaoJWT.Infra\AutenticacaoJWT.Infra.csproj" />
   </ItemGroup>
 
   <ItemGroup>
