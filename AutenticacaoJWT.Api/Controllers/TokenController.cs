@@ -1,5 +1,6 @@
 ﻿using AutenticacaoJWT.Aplicacao.IServico;
 using AutenticacaoJWT.Aplicacao.Request;
+using AutenticacaoJWT.Aplicacao.Response;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Authorization;
@@ -31,8 +32,8 @@ namespace AutenticacaoJWT.Api.Controllers
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] Aplicacao.Request.LoginRequest loginRequest, CancellationToken cancellationToken)
         {
-            Usuario usuario = await _ITokenServico.GerarToken(loginRequest, cancellationToken);
-            return Ok(new { usuario });
+            TokenResponse response = await _ITokenServico.GerarToken(loginRequest, cancellationToken);
+            return Ok(new { response });
         }
 
 

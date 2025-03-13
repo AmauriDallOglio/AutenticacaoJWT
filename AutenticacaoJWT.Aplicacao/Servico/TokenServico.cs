@@ -1,5 +1,6 @@
 ﻿using AutenticacaoJWT.Aplicacao.IServico;
 using AutenticacaoJWT.Aplicacao.Request;
+using AutenticacaoJWT.Aplicacao.Response;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 
@@ -11,7 +12,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
         public readonly IUsuarioRepositorio _IUsuarioRepositorio = usuarioRepositorio;
         public readonly ITokenConfiguracaoServico _ITokenConfiguracaoServico = iTokenConfiguracaoServico;
 
-        public async Task<Usuario> GerarToken(LoginRequest loginRequest, CancellationToken cancellationToken)
+        public async Task<TokenResponse> GerarToken(LoginRequest loginRequest, CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(loginRequest.Email))
                 throw new ArgumentException("E-mail não informado ", nameof(loginRequest.Email));
@@ -39,7 +40,8 @@ namespace AutenticacaoJWT.Aplicacao.Servico
 
             await _IGenericoRepositorioUsuario.EditarAsync(usuario, cancellationToken);
 
-            return  usuario;
+            TokenResponse tokenResponse = new TokenResponse().ConverteUsuario(usuario);
+            return tokenResponse;
         }
 
 
