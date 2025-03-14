@@ -1,7 +1,6 @@
 ﻿using AutenticacaoJWT.Aplicacao.IServico;
 using AutenticacaoJWT.Aplicacao.Request;
 using AutenticacaoJWT.Aplicacao.Response;
-using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -16,16 +15,18 @@ namespace AutenticacaoJWT.Api.Controllers
  
         private readonly IUsuarioRepositorio _IUsuarioRepositorio;
         private readonly ITokenServico _ITokenServico;
+        private readonly IRefreshServico _IRefreshServico;
         private readonly ITokenConfiguracaoServico _iTokenConfiguracaoServico;
         private static readonly Dictionary<string, string> _tokenUsuario = new Dictionary<string, string>();
         private static readonly Dictionary<string, string> _codigoUsuario = new Dictionary<string, string>();
 
 
-        public TokenController( IUsuarioRepositorio usuarioRepositorio, ITokenServico iTokenServico, ITokenConfiguracaoServico iTokenConfiguracaoServico)
+        public TokenController( IUsuarioRepositorio usuarioRepositorio, ITokenServico iTokenServico, IRefreshServico iRefreshServico ,ITokenConfiguracaoServico iTokenConfiguracaoServico)
         {
             _ITokenServico = iTokenServico;
             _IUsuarioRepositorio = usuarioRepositorio;
             _iTokenConfiguracaoServico = iTokenConfiguracaoServico;
+            _IRefreshServico = iRefreshServico;
         }
 
         [AllowAnonymous]
@@ -38,13 +39,13 @@ namespace AutenticacaoJWT.Api.Controllers
 
 
         [AllowAnonymous]
-        [HttpPost("RefreshToken")]
-        public IActionResult RefreshToken([FromBody] TokenRequest tokenRequest)
+        [HttpPost("Refresh")]
+        public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
         {
-            Usuario usuario = _ITokenServico.GerarRefreshToken(tokenRequest);
+            RefreshResponse refreshResponse = _IRefreshServico.GerarRefresh(refreshRequest);
 
 
-            return Ok(new { AccessToken = usuario.Token, RefreshToken = usuario.Refresh });
+            return Ok(refreshResponse);
         }
     }
 }

@@ -69,7 +69,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
         //    return Convert.ToBase64String(randomBytes);
         //}
 
-        public string GerarRefreshToken()
+        public string GerarRefresh()
         {
             byte[] randomBytes = new byte[32];
             RandomNumberGenerator.Fill(randomBytes);

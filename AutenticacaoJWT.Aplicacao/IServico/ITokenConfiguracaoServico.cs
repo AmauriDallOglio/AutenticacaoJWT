@@ -7,7 +7,7 @@ namespace AutenticacaoJWT.Aplicacao.IServico
         byte[] CodigoChave();
         string CodigoSecret();
         string GerarJwtToken(Usuario usuario);
-        string GerarRefreshToken();
+        string GerarRefresh();
 
     }
 }

@@ -12,8 +12,9 @@ namespace AutenticacaoJWT.Aplicacao.Configuracao
         public static void RegistrarServicosInjecaoDependencia(IServiceCollection services)
         {
 
- 
+            services.AddScoped<TokenServico>();
             services.AddScoped<ITokenServico, TokenServico>();
+            services.AddScoped<IRefreshServico, RefreshServico>();
             services.AddScoped<ITokenConfiguracaoServico, TokenConfiguracaoServico>();
             services.AddScoped(typeof(IGenericoRepositorio<>), typeof(GenericoRepositorio<>));
             services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();

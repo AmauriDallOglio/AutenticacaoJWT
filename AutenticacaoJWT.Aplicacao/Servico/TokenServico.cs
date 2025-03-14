@@ -34,7 +34,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
             }
 
             string token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
-            string refresh = _ITokenConfiguracaoServico.GerarRefreshToken();
+            string refresh = _ITokenConfiguracaoServico.GerarRefresh();
  
             usuario.AtualizaTokenRefresh(token, refresh);
 
@@ -45,20 +45,20 @@ namespace AutenticacaoJWT.Aplicacao.Servico
         }
 
 
-        public Usuario GerarRefreshToken(TokenRequest tokenRequest)
-        {
-            Usuario? usuario = _IUsuarioRepositorio.ObterPorTokenRefresh(tokenRequest.Refresh);
-            if (usuario is null)
-            {
-                throw new ArgumentException("Acesso não permitido, token inválido", nameof(tokenRequest.Refresh));
+        //public Usuario GerarRefreshToken(TokenRequest tokenRequest)
+        //{
+        //    Usuario? usuario = _IUsuarioRepositorio.ObterPorTokenRefresh(tokenRequest.Refresh);
+        //    if (usuario is null)
+        //    {
+        //        throw new ArgumentException("Acesso não permitido, token inválido", nameof(tokenRequest.Refresh));
           
-            }
+        //    }
 
-            var token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
-            var codigo = _ITokenConfiguracaoServico.GerarRefreshToken();
+        //    var token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
+        //    var codigo = _ITokenConfiguracaoServico.GerarRefresh();
 
-            usuario.AtualizaTokenRefresh(token, codigo);
-            return usuario;
-        }
+        //    usuario.AtualizaTokenRefresh(token, codigo);
+        //    return usuario;
+        //}
     }
 }
