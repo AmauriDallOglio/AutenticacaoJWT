@@ -37,12 +37,12 @@ namespace AutenticacaoJWT.Aplicacao.Servico
             var claims = new[]
             {
                 new Claim("Email", usuario.Email),
-                new Claim("AppId", "appId"),  // Identifica o aplicativo
+                //new Claim("AppId", "appId"),  // Identifica o aplicativo
                 new Claim("Nome", usuario.Nome),  // Nome do usuário
-                new Claim("Id", usuario.Id),  // ID do usuário
+            //    new Claim("Id", usuario.Id.ToString()),  // ID do usuário
                 new Claim("Refresh", usuario.Refresh),  // Papel do usuário
-                new Claim("CustomClaim", "CustomValue"), // Claim personalizada
-                new Claim("DateCreated", DateTime.Now.ToString()),  // Data de criação
+                //new Claim("CustomClaim", "CustomValue"), // Claim personalizada
+                //new Claim("DateCreated", DateTime.Now.ToString()),  // Data de criação
                 new Claim("Permissions", "read,write") // Permissões personalizadas
             };
 

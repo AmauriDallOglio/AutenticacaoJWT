@@ -2,6 +2,7 @@ using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Aplicacao.Configuracao;
 using AutenticacaoJWT.Infra.Contexto;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AutenticacaoJWT.Api
 {
@@ -11,8 +12,9 @@ namespace AutenticacaoJWT.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+ 
 
-            builder.Services.AddSqlServer<GenericoContexto>(builder.Configuration.GetConnectionString("ConexaoPadrao"));
+             builder.Services.AddSqlServer<GenericoContexto>(builder.Configuration.GetConnectionString("ConexaoPadrao"));
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();

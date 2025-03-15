@@ -15,32 +15,32 @@ namespace AutenticacaoJWT.Infra.Repositorio
         {
             _context = context;
 
-            if (_usuarios == null)
-            {
-                _usuarios = new List<Usuario>
-                {
-                    new Usuario
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Nome = "Amauri1",
-                        Email = "amauri1@amauri.com",
-                        Senha = "123456",
-                        Token = "",
-                        Refresh = "",
-                        Aplicativo = ""
-                    },
-                    new Usuario
-                    {
-                        Id = Guid.NewGuid().ToString(),
-                        Nome = "Amauri2",
-                        Email = "amauri2@amauri.com",
-                        Senha = "123456",
-                        Token = "",
-                        Refresh = "",
-                        Aplicativo = ""
-                    }
-                };
-            }
+            //if (_usuarios == null)
+            //{
+            //    _usuarios = new List<Usuario>
+            //    {
+            //        new Usuario
+            //        {
+            //            Id = Guid.NewGuid().ToString(),
+            //            Nome = "Amauri1",
+            //            Email = "amauri1@amauri.com",
+            //            Senha = "123456",
+            //            Token = "",
+            //            Refresh = "",
+            //            Aplicativo = ""
+            //        },
+            //        new Usuario
+            //        {
+            //            Id = Guid.NewGuid().ToString(),
+            //            Nome = "Amauri2",
+            //            Email = "amauri2@amauri.com",
+            //            Senha = "123456",
+            //            Token = "",
+            //            Refresh = "",
+            //            Aplicativo = ""
+            //        }
+            //    };
+            //}
 
         }
 
@@ -74,7 +74,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
 
         public Usuario Atualizar(Usuario usuarioAtualizado)
         {
-            var usuario = _usuarios.FirstOrDefault(u => u.Id == usuarioAtualizado.Id);
+            var usuario = _usuarios.FirstOrDefault(u => u.Refresh == usuarioAtualizado.Refresh);
             if (usuario != null)
             {
                 usuario.Nome = usuarioAtualizado.Nome;

@@ -33,8 +33,10 @@ namespace AutenticacaoJWT.Aplicacao.Servico
                 }
             }
 
-            string token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
             string refresh = _ITokenConfiguracaoServico.GerarRefresh();
+            usuario.Refresh = refresh;
+            string token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
+  
  
             usuario.AtualizaTokenRefresh(token, refresh);
 
