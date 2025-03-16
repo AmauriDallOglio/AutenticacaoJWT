@@ -26,11 +26,13 @@ namespace AutenticacaoJWT.Aplicacao.Servico
                 throw new ArgumentException("Acesso não permitido, refresh inválido", nameof(refreshRequest.Refresh));
             }
 
-            var token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
-            var codigo = _ITokenConfiguracaoServico.GerarRefresh();
+            //var token = _ITokenConfiguracaoServico.GerarJwtToken(usuario);
+            var refresh = _ITokenConfiguracaoServico.GerarRefresh();
 
-            usuario.AtualizaTokenRefresh(token, codigo);
-            RefreshResponse tokenResponse = new RefreshResponse() { Refresh = usuario.Refresh };
+            usuario.AtualizaRefresh(refresh);
+            _IUsuarioRepositorio.AtualizarAsync(usuario);
+
+            RefreshResponse tokenResponse = new RefreshResponse().ConverteRefresh(refresh);
 
             return tokenResponse;
         }

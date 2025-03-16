@@ -32,5 +32,15 @@
             return this;
         }
 
+        public Usuario AtualizaRefresh( string refresh)
+        {
+ 
+            Refresh = refresh;
+            InformaUltimoAcesso();
+            return this;
+        }
+
+
+
     }
 }

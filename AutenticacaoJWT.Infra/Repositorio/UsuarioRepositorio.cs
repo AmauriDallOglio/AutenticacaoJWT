@@ -7,7 +7,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
 {
     public class UsuarioRepositorio : IUsuarioRepositorio
     {
-        private readonly List<Usuario> _usuarios;
+       // private readonly List<Usuario> _usuarios;
 
         private readonly GenericoContexto _context;
 
@@ -48,13 +48,13 @@ namespace AutenticacaoJWT.Infra.Repositorio
         public void AdicionarUsuario(Usuario novoUsuario)
         {
   
-                _usuarios.Add(novoUsuario);
+                _context.UsuarioDb.Add(novoUsuario);
 
         }
 
         public List<Usuario> ObterTodosUsuarios()
         {
-            return _usuarios;
+            return _context.UsuarioDb.ToList();
         }
 
         public async Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha)
@@ -67,24 +67,17 @@ namespace AutenticacaoJWT.Infra.Repositorio
 
         public Usuario? ObterPorTokenRefresh(string refresh)
         {
-            Usuario? usuario = _usuarios.FirstOrDefault(u => u.Refresh == refresh);
+            Usuario? usuario = _context.UsuarioDb.FirstOrDefault(u => u.Refresh == refresh);
             return usuario;
         }
 
 
-        public Usuario Atualizar(Usuario usuarioAtualizado)
+        public async Task<Usuario> AtualizarAsync(Usuario usuario)
         {
-            var usuario = _usuarios.FirstOrDefault(u => u.Refresh == usuarioAtualizado.Refresh);
-            if (usuario != null)
-            {
-                usuario.Nome = usuarioAtualizado.Nome;
-                usuario.Email = usuarioAtualizado.Email;
-                usuario.Senha = usuarioAtualizado.Senha;
-                usuario.Token = usuarioAtualizado.Token;
-                usuario.Refresh = usuarioAtualizado.Refresh;
-                usuario.Aplicativo = usuarioAtualizado.Aplicativo;
-            }
+            var update = _context.Update(usuario);
+            var retorno = _context.SaveChangesAsync();
             return usuario;
+
         }
 
     }

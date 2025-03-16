@@ -8,7 +8,7 @@ namespace AutenticacaoJWT.Dominio.InterfaceRepositorio
         List<Usuario> ObterTodosUsuarios();
         Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha);
         Usuario? ObterPorTokenRefresh(string refresh);
-        Usuario Atualizar(Usuario usuarioAtualizado);
+        Task<Usuario> AtualizarAsync(Usuario usuarioAtualizado);
 
     }
 }

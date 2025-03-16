@@ -14,25 +14,25 @@ namespace AutenticacaoJWT.Api.Controllers
             _usuarioRepositorio = usuarioRepositorio;
         }
 
-        [HttpPost("Adicionar")]
-        public IActionResult AdicionarUsuario([FromBody] Usuario novoUsuario)
-        {
-            try
-            {
-                _usuarioRepositorio.AdicionarUsuario(novoUsuario);
-                return Ok(new { Message = "Usuário adicionado com sucesso!" });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { Error = ex.Message });
-            }
-        }
+        //[HttpPost("Adicionar")]
+        //public IActionResult AdicionarUsuario([FromBody] Usuario novoUsuario)
+        //{
+        //    try
+        //    {
+        //        _usuarioRepositorio.AdicionarUsuario(novoUsuario);
+        //        return Ok(new { Message = "Usuário adicionado com sucesso!" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest(new { Error = ex.Message });
+        //    }
+        //}
 
-        [HttpGet("ObterTodos")]
-        public IActionResult ObterTodosUsuarios()
-        {
-            return Ok(_usuarioRepositorio.ObterTodosUsuarios());
-        }
+        //[HttpGet("ObterTodos")]
+        //public IActionResult ObterTodosUsuarios()
+        //{
+        //    return Ok(_usuarioRepositorio.ObterTodosUsuarios());
+        //}
     }
 
 }

@@ -29,20 +29,36 @@ namespace AutenticacaoJWT.Api.Configuracao
 
             context.Request.EnableBuffering();
 
-            if (context.Request.Method == HttpMethods.Post && context.Request.Path.Equals("/api/Token/RefreshToken", StringComparison.OrdinalIgnoreCase))
+            if (context.Request.Method == HttpMethods.Post)
             {
-                var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
-                context.Request.Body.Position = 0;
-                var refreshTokenDto = JsonSerializer.Deserialize<TokenRequest>(requestBody, new JsonSerializerOptions
+                if (context.Request.Path.Equals("/api/Token/Login", StringComparison.OrdinalIgnoreCase))
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-
-                if (refreshTokenDto != null && !string.IsNullOrEmpty(refreshTokenDto.Refresh))
-                {
-
-
+                    Console.WriteLine("token");
+                    var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                    Console.WriteLine(requestBody);
+                    context.Request.Body.Position = 0;
+                    var refreshTokenDto = JsonSerializer.Deserialize<TokenRequest>(requestBody, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    Console.WriteLine(refreshTokenDto);
                 }
+
+                if (context.Request.Path.Equals("/api/Token/Refresh", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("Refresh");
+                    var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
+                    Console.WriteLine(requestBody);
+                    context.Request.Body.Position = 0;
+                    var refreshTokenDto = JsonSerializer.Deserialize<TokenRequest>(requestBody, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                    Console.WriteLine(refreshTokenDto);
+                }
+
+
+ 
             }
 
 
@@ -71,9 +87,7 @@ namespace AutenticacaoJWT.Api.Configuracao
                 { typeof(MinhaExcecaoPersonalizada), StatusCodes.Status418ImATeapot }
             };
 
-            var httpCodigoErro = httpDicionarioCodigoErros.TryGetValue(exception.GetType(), out var code)
-                ? code
-                : StatusCodes.Status500InternalServerError;
+            var httpCodigoErro = httpDicionarioCodigoErros.TryGetValue(exception.GetType(), out var code) ? code : StatusCodes.Status500InternalServerError;
 
             string mensagemDoLog = await new ArquivoLog().IncluirLinha(_caminhoLog, exception, _PathString, "Erro inesperado");
 
