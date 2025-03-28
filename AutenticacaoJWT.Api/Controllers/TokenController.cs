@@ -1,4 +1,5 @@
-﻿using AutenticacaoJWT.Aplicacao.IServico;
+﻿using AutenticacaoJWT.Api.Configuracao;
+using AutenticacaoJWT.Aplicacao.IServico;
 using AutenticacaoJWT.Aplicacao.Request;
 using AutenticacaoJWT.Aplicacao.Response;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
@@ -29,6 +30,7 @@ namespace AutenticacaoJWT.Api.Controllers
             _IRefreshServico = iRefreshServico;
         }
 
+        [FiltroController]
         [AllowAnonymous]
         [HttpPost("Login")]
         public async Task<IActionResult> Login([FromBody] Aplicacao.Request.LoginRequest loginRequest, CancellationToken cancellationToken)
@@ -37,14 +39,12 @@ namespace AutenticacaoJWT.Api.Controllers
             return Ok(new { response });
         }
 
-
+        [FiltroController]
         [AllowAnonymous]
         [HttpPost("Refresh")]
         public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
         {
             RefreshResponse refreshResponse = _IRefreshServico.GerarRefresh(refreshRequest);
-
-
             return Ok(refreshResponse);
         }
     }

@@ -26,7 +26,7 @@ namespace AutenticacaoJWT.Api.Configuracao
 
         public async Task InvokeAsync(HttpContext context)
         {
-
+            HelperConsoleColor.Info($"MeuMiddleware 1 - Requisição recebida para: {context.Request.Path}");
             context.Request.EnableBuffering();
 
             if (context.Request.Method == HttpMethods.Post)
@@ -56,11 +56,7 @@ namespace AutenticacaoJWT.Api.Configuracao
                     });
                     Console.WriteLine(refreshTokenDto);
                 }
-
-
- 
             }
-
 
             _PathString = context.Request.Path;
             try
@@ -71,6 +67,7 @@ namespace AutenticacaoJWT.Api.Configuracao
             {
                 await TratamentoExceptionAsync(context, ex);
             }
+            HelperConsoleColor.Info($"MeuMiddleware 2 - Resposta enviada para: {context.Response.StatusCode + " / " + _PathString}");
         }
 
         private async Task TratamentoExceptionAsync(HttpContext context, Exception exception)
