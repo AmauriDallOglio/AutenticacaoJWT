@@ -2,16 +2,16 @@
 
 namespace AutenticacaoJWT.Api.Configuracao
 {
-    public class FiltroController : ActionFilterAttribute
+    public class LogController : ActionFilterAttribute
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            HelperConsoleColor.Sucesso($"FiltroController 1 - Antes de ser executada.");
+            HelperConsoleColor.Sucesso($"LogController 1 - Antes de ser executada.");
         }
 
         public override void OnActionExecuted(ActionExecutedContext context)
         {
-            HelperConsoleColor.Sucesso($"FiltroController 2 - Depois de ser executada.");
+            HelperConsoleColor.Sucesso($"LogController 2 - Depois de ser executada.");
         }
     }
 }

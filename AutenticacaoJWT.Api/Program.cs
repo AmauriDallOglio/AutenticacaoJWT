@@ -16,6 +16,26 @@ namespace AutenticacaoJWT.Api
 
             builder.Services.AddSqlServer<GenericoContexto>(builder.Configuration.GetConnectionString("ConexaoPadrao"));
 
+
+
+            ////if (!builder.Environment.IsDevelopment())
+            ////{
+            //string AZURE_DB = Environment.GetEnvironmentVariable("AZURE_DB");
+            //Console.WriteLine("AZURE_DB: " + AZURE_DB);
+            //builder.Services.AddDbContext<GenericoContexto>(options => options.UseSqlServer(AZURE_DB));
+            ////}
+            ////else
+            ////{
+            ////    string filePath = "C:\\Amauri\\GitHub\\ServicosNetAzureWebConnection.txt";
+            ////    string AZURE_DB = File.ReadAllText(filePath).Replace("\\\\", "\\");
+            ////    Console.WriteLine("AZURE_DB: " + AZURE_DB);
+            ////    builder.Services.AddDbContext<GenericoContexto>(options => options.UseSqlServer(AZURE_DB));
+
+            ////    //builder.Services.AddSqlServer<NetAzureContexto>(builder.Configuration.GetConnectionString("ConexaoPadrao"));
+            ////}
+
+
+
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
@@ -39,12 +59,12 @@ namespace AutenticacaoJWT.Api
             app.Use(async (context, next) =>
             {
                 var stopwatch = Stopwatch.StartNew(); // Inicia a medição do tempo
-                HelperConsoleColor.Alerta($"Program 1 - Middleware antes do controlador");
+                HelperConsoleColor.Alerta($"app.Use 1 - Middleware antes do controlador");
  
                 await next.Invoke(); // Chama o próximo middleware
 
                 stopwatch.Stop(); // Para a medição do tempo
-                HelperConsoleColor.Alerta($"Program 2 - Middleware depois do controlador. Tempo decorrido: {stopwatch.ElapsedMilliseconds} ms");
+                HelperConsoleColor.Alerta($"app.Use 2 - Middleware depois do controlador. Tempo decorrido: {stopwatch.ElapsedMilliseconds} ms");
             });
 
 
@@ -52,8 +72,8 @@ namespace AutenticacaoJWT.Api
             app.UseAuthorization();
             app.MapControllers();
             app.UseMiddleware<MiddlewareError>();
-            HelperConsoleColor.Sucesso("Finalizado!");
             app.Run();
+            HelperConsoleColor.Sucesso("Finalizado!");
         }
     }
 }

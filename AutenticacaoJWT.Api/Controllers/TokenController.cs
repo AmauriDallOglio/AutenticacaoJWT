@@ -30,16 +30,16 @@ namespace AutenticacaoJWT.Api.Controllers
             _IRefreshServico = iRefreshServico;
         }
 
-        [FiltroController]
+        [LogController]
         [AllowAnonymous]
         [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] Aplicacao.Request.LoginRequest loginRequest, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest, CancellationToken cancellationToken)
         {
             TokenResponse response = await _ITokenServico.GerarToken(loginRequest, cancellationToken);
             return Ok(new { response });
         }
 
-        [FiltroController]
+        [LogController]
         [AllowAnonymous]
         [HttpPost("Refresh")]
         public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
