@@ -1,6 +1,6 @@
 ﻿using AutenticacaoJWT.Dominio.Entidade;
 
-namespace AutenticacaoJWT.Aplicacao.Controller.TokenController.GerarToken
+namespace AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken
 {
     public class GerarTokenResponse
     {
@@ -10,9 +10,10 @@ namespace AutenticacaoJWT.Aplicacao.Controller.TokenController.GerarToken
 
         public GerarTokenResponse ConverteUsuario(Usuario usuario)
         {
-            this.Token = usuario.Token;
-            this.Refresh = usuario.Refresh;
-            this.Aplicativo = usuario.Aplicativo;
+   
+            this.Token = usuario?.Token??"";
+            this.Refresh = usuario?.Refresh??"";
+            this.Aplicativo = usuario?.Aplicativo??"";
             return this;
         }
     }

@@ -1,24 +1,21 @@
-﻿using AutenticacaoJWT.Aplicacao.IServico;
-using AutenticacaoJWT.Aplicacao.Request;
-using AutenticacaoJWT.Aplicacao.Response;
+﻿using AutenticacaoJWT.Aplicacao.Servico.Interface;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 
-namespace AutenticacaoJWT.Aplicacao.Servico
+namespace AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken
 {
-    public class RefreshServico : IRefreshServico
+    public class RefreshTokenHandler
     {
-
         public readonly IUsuarioRepositorio _IUsuarioRepositorio;
         public readonly ITokenConfiguracaoServico _ITokenConfiguracaoServico;
-        public RefreshServico( IUsuarioRepositorio usuarioRepositorio, ITokenConfiguracaoServico tokenConfiguracaoServico) 
+
+        public RefreshTokenHandler(IUsuarioRepositorio usuarioRepositorio, ITokenConfiguracaoServico tokenConfiguracaoServico)
         {
-       
             _IUsuarioRepositorio = usuarioRepositorio;
             _ITokenConfiguracaoServico = tokenConfiguracaoServico;
         }
 
-        public RefreshResponse GerarRefresh(RefreshRequest refreshRequest)
+        public RefreshTokenResponse GerarRefresh(RefreshTokenRequest refreshRequest)
         {
             Usuario? usuario = _IUsuarioRepositorio.ObterPorTokenRefresh(refreshRequest.Refresh);
             if (usuario is null)
@@ -32,7 +29,7 @@ namespace AutenticacaoJWT.Aplicacao.Servico
             usuario.AtualizaRefresh(refresh);
             _IUsuarioRepositorio.AtualizarAsync(usuario);
 
-            RefreshResponse tokenResponse = new RefreshResponse().ConverteRefresh(refresh);
+            RefreshTokenResponse tokenResponse = new RefreshTokenResponse().ConverteRefresh(refresh);
 
             return tokenResponse;
         }

@@ -1,8 +1,6 @@
 ﻿using AutenticacaoJWT.Api.Configuracao;
-using AutenticacaoJWT.Aplicacao.IServico;
-using AutenticacaoJWT.Aplicacao.Request;
-using AutenticacaoJWT.Aplicacao.Response;
-using AutenticacaoJWT.Dominio.InterfaceRepositorio;
+using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
+using AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,39 +11,93 @@ namespace AutenticacaoJWT.Api.Controllers
     public class TokenController : ControllerBase
     {
 
- 
-        private readonly IUsuarioRepositorio _IUsuarioRepositorio;
-        private readonly ITokenServico _ITokenServico;
-        private readonly IRefreshServico _IRefreshServico;
-        private readonly ITokenConfiguracaoServico _iTokenConfiguracaoServico;
-        private static readonly Dictionary<string, string> _tokenUsuario = new Dictionary<string, string>();
-        private static readonly Dictionary<string, string> _codigoUsuario = new Dictionary<string, string>();
 
 
-        public TokenController( IUsuarioRepositorio usuarioRepositorio, ITokenServico iTokenServico, IRefreshServico iRefreshServico ,ITokenConfiguracaoServico iTokenConfiguracaoServico)
+
+        private readonly GerartokenHandler _gerartokenHandler;
+        private readonly RefreshTokenHandler _refreshTokenHandler;
+
+        public TokenController(GerartokenHandler gerartokenHandler, RefreshTokenHandler refreshTokenHandler)
         {
-            _ITokenServico = iTokenServico;
-            _IUsuarioRepositorio = usuarioRepositorio;
-            _iTokenConfiguracaoServico = iTokenConfiguracaoServico;
-            _IRefreshServico = iRefreshServico;
+
+
+            _gerartokenHandler = gerartokenHandler;
+            _refreshTokenHandler = refreshTokenHandler;
         }
 
         [LogController]
         [AllowAnonymous]
-        [HttpPost("Login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest, CancellationToken cancellationToken)
+        [HttpPost("GerarToken")]
+        public async Task<IActionResult> GerarToken([FromBody] GerarTokenRequest loginRequest, CancellationToken cancellationToken)
         {
-            TokenResponse response = await _ITokenServico.GerarToken(loginRequest, cancellationToken);
+            GerarTokenResponse response = await _gerartokenHandler.GerarToken(loginRequest, cancellationToken);
             return Ok(new { response });
         }
 
+
+
+
+
         [LogController]
         [AllowAnonymous]
-        [HttpPost("Refresh")]
-        public IActionResult RefreshToken([FromBody] RefreshRequest refreshRequest)
+        [HttpPost("RefreshToken")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshRequest)
         {
-            RefreshResponse refreshResponse = _IRefreshServico.GerarRefresh(refreshRequest);
+            RefreshTokenResponse refreshResponse = _refreshTokenHandler.GerarRefresh(refreshRequest);
             return Ok(refreshResponse);
         }
+
+
+
+        //[ApiVersion("1.0")]
+        //[Route("api/v{version:apiVersion}/[controller]")]
+        //[Authorize(Policy = "AcessoV1")] // Requer claim AcessoApi=v3
+        //[HttpGet("ObterPerfilAcessoV1")]
+        //public IActionResult ObterPerfilAcessoV1()
+        //{
+        //    return Ok(new
+        //    {
+        //        sucesso = true,
+        //        versao = "v1.0",
+        //        mensagem = "Acesso autorizado à versão 1 da API.",
+        //        usuario = User.Identity?.Name,
+        //        claims = User.Claims.Select(c => new { c.Type, c.Value })
+        //    });
+        //}
+
+
+        //[ApiVersion("2.0")]
+        //[Route("api/v{version:apiVersion}/[controller]")]
+        //[Authorize(Policy = "AcessoV2")] // Requer claim AcessoApi=v3
+        //[HttpGet("ObterPerfilAcessoV2")]
+        //public IActionResult ObterPerfilAcessoV2()
+        //{
+        //    return Ok(new
+        //    {
+        //        sucesso = true,
+        //        versao = "v2.0",
+        //        mensagem = "Acesso autorizado à versão 2 da API.",
+        //        usuario = User.Identity?.Name,
+        //        claims = User.Claims.Select(c => new { c.Type, c.Value })
+        //    });
+        //}
+
+
+        //[ApiVersion("3.0")]
+        //[Route("api/v{version:apiVersion}/[controller]")]
+        //[Authorize(Policy = "AcessoV3")] // Requer claim AcessoApi=v3
+        //[HttpGet("ObterPerfilAcessoV3")]
+        //public IActionResult ObterPerfilAcessoV3()
+        //{
+        //    return Ok(new
+        //    {
+        //        sucesso = true,
+        //        versao = "v3.0",
+        //        mensagem = "Acesso autorizado à versão 3 da API.",
+        //        usuario = User.Identity?.Name,
+        //        claims = User.Claims.Select(c => new { c.Type, c.Value })
+        //    });
+        //}
+
     }
 }

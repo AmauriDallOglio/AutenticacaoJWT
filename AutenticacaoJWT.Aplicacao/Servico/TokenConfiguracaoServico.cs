@@ -1,4 +1,4 @@
-﻿using AutenticacaoJWT.Aplicacao.IServico;
+﻿using AutenticacaoJWT.Aplicacao.Servico.Interface;
 using AutenticacaoJWT.Dominio.Entidade;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;

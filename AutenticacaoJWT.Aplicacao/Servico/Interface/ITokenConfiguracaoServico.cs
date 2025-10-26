@@ -1,6 +1,6 @@
 ﻿using AutenticacaoJWT.Dominio.Entidade;
 
-namespace AutenticacaoJWT.Aplicacao.IServico
+namespace AutenticacaoJWT.Aplicacao.Servico.Interface
 {
     public interface ITokenConfiguracaoServico
     {

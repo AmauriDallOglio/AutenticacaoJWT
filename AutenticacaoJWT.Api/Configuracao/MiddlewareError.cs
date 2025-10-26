@@ -1,6 +1,12 @@
-﻿using AutenticacaoJWT.Aplicacao.Request;
+﻿using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
+using AutenticacaoJWT.Aplicacao.DTO;
 using AutenticacaoJWT.Aplicacao.Util;
 using MediatR;
+using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json.Linq;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using System.Text.Json;
 
 namespace AutenticacaoJWT.Api.Configuracao
@@ -37,7 +43,7 @@ namespace AutenticacaoJWT.Api.Configuracao
                     var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
                     Console.WriteLine(requestBody);
                     context.Request.Body.Position = 0;
-                    var refreshTokenDto = JsonSerializer.Deserialize<TokenRequest>(requestBody, new JsonSerializerOptions
+                    var refreshTokenDto = JsonSerializer.Deserialize<GerarTokenRequest>(requestBody, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
@@ -50,12 +56,98 @@ namespace AutenticacaoJWT.Api.Configuracao
                     var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
                     Console.WriteLine(requestBody);
                     context.Request.Body.Position = 0;
-                    var refreshTokenDto = JsonSerializer.Deserialize<TokenRequest>(requestBody, new JsonSerializerOptions
+                    var refreshTokenDto = JsonSerializer.Deserialize<GerarTokenRequest>(requestBody, new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     });
                     Console.WriteLine(refreshTokenDto);
                 }
+
+                if (context.Request.Path.Equals("/api/VersaoUm", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("token");
+
+                    string tokenInformado = context.Request.Headers.Authorization.ToString();
+                    if (!string.IsNullOrEmpty(tokenInformado))
+                    {
+                        if (!tokenInformado.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            throw new UnauthorizedAccessException("ResourceMensagem.BearerNaoInformado");
+                        }
+
+                        string token = tokenInformado["Bearer ".Length..].Trim();
+                        // Remove o prefixo "Bearer " (com ou sem espaço)
+                        if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            token = token.Substring("Bearer ".Length).Trim();
+                        }
+
+
+
+                        if (string.IsNullOrEmpty(token))
+                            throw new UnauthorizedAccessException("Token é obrigatório.");
+
+                        var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+
+                        var tokenHandler = new JwtSecurityTokenHandler();
+                        try
+                        {
+                            var validationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuer = false,
+                                ValidateAudience = false,
+                                ValidateLifetime = true,
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(key),
+                                ClockSkew = TimeSpan.Zero // evita tolerância extra de tempo
+                            };
+
+                            try
+                            {
+                                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+
+                                // Extrai as claims do token
+                                var nome = principal.Identity?.Name;
+                                var roles = principal.Claims
+                                    .Where(c => c.Type == ClaimTypes.Role)
+                                    .Select(c => c.Value)
+                                    .ToArray();
+
+                                var versoes = principal.Claims
+                                    .Where(c => c.Type == "AcessoApi")
+                                    .Select(c => c.Value)
+                                    .ToArray();
+
+                                var resultdo = new UsuarioDto
+                                {
+                                    Nome = nome ?? "",
+                                    Roles = roles,
+                                    Versoes = versoes
+                                };
+                            }
+                            catch
+                            {
+                                throw new UnauthorizedAccessException(" null"); // Retorna null se o token for inválido ou expirado
+                            }
+
+
+                        }
+                        catch (SecurityTokenExpiredException)
+                        {
+                            throw new UnauthorizedAccessException("Token expirado.");
+                        }
+                        catch (SecurityTokenException ex)
+                        {
+                            throw new UnauthorizedAccessException("Token inválido.");
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new UnauthorizedAccessException("Erro inesperado.");
+                        }
+                    }
+                }
+
+
             }
 
             _PathString = context.Request.Path;
@@ -68,6 +160,22 @@ namespace AutenticacaoJWT.Api.Configuracao
                 await TratamentoExceptionAsync(context, ex);
             }
             HelperConsoleColor.Info($"MiddlewareError 2 - Resposta enviada para: {context.Response.StatusCode + " / " + _PathString}");
+        }
+
+
+        public TokenValidationParameters RegrasToken(string secret)
+        {
+            SymmetricSecurityKey _secretKey = new(Encoding.UTF8.GetBytes(secret));
+            return new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true, //Se definido como true, o sistema tentará validar a chave de assinatura
+                IssuerSigningKey = _secretKey, //Esta é a chave usada para verificar a assinatura dos tokens.
+                ValidateIssuer = false, //Se definido como false, o sistema não realizará essa validação quem emitiu o token.
+                ValidateAudience = false, //Se definido como false, o sistema não realizará essa validação quem o token é destinado.
+                RoleClaimType = ClaimTypes.Role, //Isso é útil quando você deseja mapear as funções dos usuários para reivindicações no token.
+                ClockSkew = TimeSpan.Zero, //Qualquer atraso ou adiantamento na hora do sistema pode resultar na rejeição do token.
+                ValidateLifetime = false, //Se definido como true, o swagger verificará se o token já expirou automaticamente.
+            };
         }
 
         private async Task TratamentoExceptionAsync(HttpContext context, Exception exception)
@@ -113,6 +221,55 @@ namespace AutenticacaoJWT.Api.Configuracao
             await context.Response.WriteAsJsonAsync(response);
         }
 
+
+        private static async Task HandleExceptionAsync(HttpContext context, Exception ex, long tempoMs)
+        {
+            var versao = DetectarVersao(context.Request.Path);
+            var response = CriarRespostaErro(versao, context.Response.StatusCode == 0 ? 500 : context.Response.StatusCode, ex.Message, tempoMs);
+
+            context.Response.ContentType = "application/json";
+            context.Response.StatusCode = 500;
+            await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+        }
+
+
+        private static string DetectarVersao(PathString path)
+        {
+            if (path.HasValue)
+            {
+                if (path.Value.Contains("/v1/", StringComparison.OrdinalIgnoreCase)) return "v1";
+                if (path.Value.Contains("/v2/", StringComparison.OrdinalIgnoreCase)) return "v2";
+                if (path.Value.Contains("/v3/", StringComparison.OrdinalIgnoreCase)) return "v3";
+            }
+            return "v1"; // padrão
+        }
+
+        private static object CriarRespostaErro(string versao, int statusCode, string mensagem, long tempoMs)
+        {
+            return versao switch
+            {
+                "v2" => new
+                {
+                    sucesso = false,
+                    mensagem,
+                    codigo = statusCode,
+                    tempo = $"{tempoMs}ms"
+                },
+                "v3" => new
+                {
+                    sucesso = false,
+                    mensagem,
+                    codigo = statusCode,
+                    tempo = $"{tempoMs}ms",
+                    detalhes = "Verifique os parâmetros enviados ou contate o suporte técnico."
+                },
+                _ => new
+                {
+                    sucesso = false,
+                    mensagem
+                }
+            };
+        }
 
         //private readonly RequestDelegate _next;
 
