@@ -13,5 +13,13 @@ namespace AutenticacaoJWT.Api.Controllers
         {
             return Ok();
         }
+
+        [HttpGet("PingRespostaV3")]
+        public IActionResult PingRespostaV1()
+        {
+
+            return Ok(new { Sucesso = true, Mensagem = "Resposta v3", Codigo = 200, Tempo = DateTime.UtcNow, Detalhes = "Sem detalhes de erro" });
+
+        }
     }
 }

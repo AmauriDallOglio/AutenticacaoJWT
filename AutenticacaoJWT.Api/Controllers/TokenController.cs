@@ -1,8 +1,16 @@
 ﻿using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
 using AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken;
+using AutenticacaoJWT.Aplicacao.DTO;
+using AutenticacaoJWT.Dominio.Entidade;
+using AutenticacaoJWT.Dominio.InterfaceRepositorio;
+using AutenticacaoJWT.Infra.Repositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace AutenticacaoJWT.Api.Controllers
 {
@@ -13,25 +21,73 @@ namespace AutenticacaoJWT.Api.Controllers
 
 
 
-
+        public readonly IUsuarioRepositorio _IUsuarioRepositorio;
         private readonly GerartokenHandler _gerartokenHandler;
         private readonly RefreshTokenHandler _refreshTokenHandler;
 
-        public TokenController(GerartokenHandler gerartokenHandler, RefreshTokenHandler refreshTokenHandler)
+        public TokenController(IUsuarioRepositorio iUsuarioRepositorio, GerartokenHandler gerartokenHandler, RefreshTokenHandler refreshTokenHandler)
         {
-
-
             _gerartokenHandler = gerartokenHandler;
             _refreshTokenHandler = refreshTokenHandler;
+            _IUsuarioRepositorio = iUsuarioRepositorio;
         }
 
         [LogController]
         [AllowAnonymous]
         [HttpPost("GerarToken")]
-        public async Task<IActionResult> GerarToken([FromBody] GerarTokenRequest loginRequest, CancellationToken cancellationToken)
+        public async Task<IActionResult> GerarToken([FromQuery] GerarTokenRequest loginRequest, CancellationToken cancellationToken)
         {
-            GerarTokenResponse response = await _gerartokenHandler.GerarToken(loginRequest, cancellationToken);
-            return Ok(new { response });
+            //GerarTokenResponse response = await _gerartokenHandler.GerarToken(loginRequest, cancellationToken);
+            //return Ok(new { response });
+
+            if (string.IsNullOrWhiteSpace(loginRequest.Email) || string.IsNullOrWhiteSpace(loginRequest.Senha))
+                return BadRequest(new { Codigo = 400, Mensagem = "Login e senha são obrigatórios." });
+
+            Usuario? usuario = await _IUsuarioRepositorio.ObterUsuarioPorEmailSenhaAsync(loginRequest.Email, loginRequest.Senha);
+            if (usuario == null)
+                return Unauthorized(new { mensagem = "Usuário não encontrado!" });
+
+            // Chave secreta usada para assinar o token
+            var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+
+            // Criação da lista de claims
+            var claims = new List<Claim>
+            {
+                new Claim("Id", usuario.Id.ToString()),
+                new Claim("Email", usuario.Email),
+                new Claim("Nome", usuario.Nome),
+                new Claim("Refresh", usuario.Refresh ?? ""),
+                new Claim("Codigo", usuario.Codigo ?? ""),
+                new Claim("Aplicativo", usuario.Aplicativo ?? ""),
+                new Claim("DataCadastro", usuario.DataCadastro.ToString("o")), // formato ISO 8601
+                new Claim("UltimoAcesso", usuario.UltimoAcesso?.ToString("o") ?? ""),
+                new Claim("Permissions", "read,write") // exemplo de permissão
+            };
+
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(claims),
+                Expires = DateTime.Now.AddMinutes(60), // O token expira em 60 minutos a partir de agora (UTC)
+                NotBefore = DateTime.Now, // Define quando o token começa a valer (agora, em UTC)
+                IssuedAt = DateTime.Now, // Define quando o token foi emitido (agora, em UTC)
+
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(key),
+                    SecurityAlgorithms.HmacSha256Signature
+                )
+            };
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var securityToken = tokenHandler.CreateToken(tokenDescriptor);
+            var tokenString = tokenHandler.WriteToken(securityToken);
+
+            // Retorna token e data de expiração convertida para hora local
+            return Ok(new
+            {
+                token = tokenString,
+                expiracao = securityToken.ValidTo.ToLocalTime() // Mostra em hora local
+            });
         }
 
 
@@ -41,7 +97,7 @@ namespace AutenticacaoJWT.Api.Controllers
         [LogController]
         [AllowAnonymous]
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequest refreshRequest)
+        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequest refreshRequest)
         {
             RefreshTokenResponse refreshResponse = _refreshTokenHandler.GerarRefresh(refreshRequest);
             return Ok(refreshResponse);

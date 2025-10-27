@@ -1,4 +1,5 @@
 ﻿using AutenticacaoJWT.Aplicacao.DTO;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -12,19 +13,19 @@ namespace AutenticacaoJWT.Api.Controllers
     [Route("api/[controller]")]
     public class VersaoUmController : ControllerBase
     {
-        [HttpPost]
-        public IActionResult GerarTokenDto(string login, string senha)
+        [HttpPost("GerarToken")]
+        public IActionResult GerarTokenDto([FromQuery] LoginRequestDto loginRequest)
         {
-            if (login == null || senha == null)
-                return Unauthorized(new { mensagem = "Usuário ou senha inválidos" });
+            if (string.IsNullOrWhiteSpace(loginRequest.Login) || string.IsNullOrWhiteSpace(loginRequest.Senha))
+                return BadRequest(new { Codigo = 400, Mensagem = "Login e senha são obrigatórios." });
 
-  
             // Busca usuário na lista estática
             UsuarioDto usuario = UsuarioDto.ListaUsuariosDto().FirstOrDefault(u =>
-                u.Nome.Equals(login, StringComparison.OrdinalIgnoreCase) &&
-                u.Senha == senha);
+                u.Nome.Equals(loginRequest.Login, StringComparison.OrdinalIgnoreCase) &&
+                u.Senha == loginRequest.Senha);
 
- 
+            if (usuario == null)
+                return Unauthorized(new { mensagem = "Usuário não encontrado!" });
 
             // Chave secreta usada para assinar o token
             var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
@@ -47,7 +48,6 @@ namespace AutenticacaoJWT.Api.Controllers
                 claims.Add(new Claim("AcessoApi", versao));
             }
 
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -61,8 +61,6 @@ namespace AutenticacaoJWT.Api.Controllers
                 )
             };
 
-
-
             var tokenHandler = new JwtSecurityTokenHandler();
             var securityToken = tokenHandler.CreateToken(tokenDescriptor);
             var tokenString = tokenHandler.WriteToken(securityToken);
@@ -73,6 +71,13 @@ namespace AutenticacaoJWT.Api.Controllers
                 token = tokenString,
                 expiracao = securityToken.ValidTo.ToLocalTime() // Mostra em hora local
             });
+        }
+
+        [Authorize(Policy = "AcessoV1")] // Apenas quem tem claim AcessoApi=1
+        [HttpGet("PingRespostaV1")]
+        public IActionResult PingRespostaV1()
+        {
+            return Ok(new { Sucesso = true, Mensagem = "Resposta v1" });
         }
     }
 }

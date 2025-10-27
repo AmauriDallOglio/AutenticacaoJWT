@@ -40,7 +40,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
             }
             catch (Exception ex)
             {
-                throw new Exception($"Não foi possível alterar o registro, operação cancelada! {ex.Message}");
+                throw new Exception($"Não foi possível alterar o registro, operação cancelada! {ex.InnerException?.Message??""}");
             }
         }
 

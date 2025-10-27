@@ -2,8 +2,10 @@
 using AutenticacaoJWT.Aplicacao.DTO;
 using AutenticacaoJWT.Aplicacao.Util;
 using MediatR;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Linq;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -17,7 +19,12 @@ namespace AutenticacaoJWT.Api.Configuracao
         private readonly RequestDelegate _next;
         private readonly string _caminhoLog = "logs/error_log.txt";
 
-        private static PathString _PathString { get; set; }
+        private static PathString _url { get; set; } = PathString.Empty;
+        private static string _metodo { get; set; } = string.Empty;
+        private static string _token { get; set; } = string.Empty;
+
+
+ 
 
         public MiddlewareError(RequestDelegate next)
         {
@@ -27,30 +34,78 @@ namespace AutenticacaoJWT.Api.Configuracao
             {
                 Directory.CreateDirectory("logs");
             }
-            _PathString = string.Empty;
+            _url = string.Empty;
+            _metodo = string.Empty;
+            _token = string.Empty;
         }
 
         public async Task InvokeAsync(HttpContext context)
         {
             HelperConsoleColor.Info($"MiddlewareError 1 - Requisição recebida para: {context.Request.Path}");
             context.Request.EnableBuffering();
+            _url = context.Request.Path;
+            _metodo = context.Request.Method.ToString();
+            _token = context.Request.Headers.Authorization.ToString();
+
+            // Remove o prefixo "Bearer " (com ou sem espaço)
+            if (!String.IsNullOrEmpty(_token))
+            {
+                _token = _token.Substring("Bearer ".Length).Trim();
+            }
 
             if (context.Request.Method == HttpMethods.Post)
             {
-                if (context.Request.Path.Equals("/api/Token/Login", StringComparison.OrdinalIgnoreCase))
+                if (_url == "/api/Token/GerarToken")
                 {
-                    Console.WriteLine("token");
-                    var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
-                    Console.WriteLine(requestBody);
-                    context.Request.Body.Position = 0;
-                    var refreshTokenDto = JsonSerializer.Deserialize<GerarTokenRequest>(requestBody, new JsonSerializerOptions
+                    if (!string.IsNullOrEmpty(_token))
                     {
-                        PropertyNameCaseInsensitive = true
-                    });
-                    Console.WriteLine(refreshTokenDto);
+                        try
+                        {
+                            var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+                            var tokenHandler = new JwtSecurityTokenHandler();
+                            var validationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = new SymmetricSecurityKey(key),
+                                ValidateIssuer = false,
+                                ValidateAudience = false,
+                                ValidateLifetime = true,
+                                ClockSkew = TimeSpan.Zero
+                            };
+
+                            // Valida e descriptografa o token
+                            ClaimsPrincipal? principal = tokenHandler.ValidateToken(_token, validationParameters, out SecurityToken validatedToken);
+
+                            // Extrai as claims e converte para o modelo
+                            UsuarioTokenModel usuarioToken = new UsuarioTokenModel
+                            {
+                                Id = Guid.Parse(GetClaimValue(principal, "Id")),
+                                Email = GetClaimValue(principal, "Email"),
+                                Nome = GetClaimValue(principal, "Nome"),
+                                Codigo = GetClaimValue(principal, "Codigo"),
+                                Aplicativo = GetClaimValue(principal, "Aplicativo"),
+                                Refresh = GetClaimValue(principal, "Refresh"),
+                                Permissions = GetClaimValue(principal, "Permissions"),
+                                DataCadastro = DateTime.Parse(GetClaimValue(principal, "DataCadastro")),
+                                UltimoAcesso = ParseNullableDateTime(GetClaimValue(principal, "UltimoAcesso"))
+                            };
+                        }
+                        catch (SecurityTokenExpiredException)
+                        {
+                            throw new UnauthorizedAccessException("Token expirado.");
+                        }
+                        catch (SecurityTokenException)
+                        {
+                            throw new UnauthorizedAccessException("Token inválido.");
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new UnauthorizedAccessException($"Erro ao validar token: {ex.Message}");
+                        }
+                    }
                 }
 
-                if (context.Request.Path.Equals("/api/Token/Refresh", StringComparison.OrdinalIgnoreCase))
+                if (_url == "/api/Token/Refresh")
                 {
                     Console.WriteLine("Refresh");
                     var requestBody = await new StreamReader(context.Request.Body).ReadToEndAsync();
@@ -63,35 +118,15 @@ namespace AutenticacaoJWT.Api.Configuracao
                     Console.WriteLine(refreshTokenDto);
                 }
 
-                if (context.Request.Path.Equals("/api/VersaoUm", StringComparison.OrdinalIgnoreCase))
+                if (_url == "/api/VersaoUm/GerarToken")
                 {
-                    Console.WriteLine("token");
-
-                    string tokenInformado = context.Request.Headers.Authorization.ToString();
-                    if (!string.IsNullOrEmpty(tokenInformado))
+                    try
                     {
-                        if (!tokenInformado.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        if (!string.IsNullOrEmpty(_token))
                         {
-                            throw new UnauthorizedAccessException("ResourceMensagem.BearerNaoInformado");
-                        }
+                            var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+                            var tokenHandler = new JwtSecurityTokenHandler();
 
-                        string token = tokenInformado["Bearer ".Length..].Trim();
-                        // Remove o prefixo "Bearer " (com ou sem espaço)
-                        if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                        {
-                            token = token.Substring("Bearer ".Length).Trim();
-                        }
-
-
-
-                        if (string.IsNullOrEmpty(token))
-                            throw new UnauthorizedAccessException("Token é obrigatório.");
-
-                        var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
-
-                        var tokenHandler = new JwtSecurityTokenHandler();
-                        try
-                        {
                             var validationParameters = new TokenValidationParameters
                             {
                                 ValidateIssuer = false,
@@ -99,58 +134,120 @@ namespace AutenticacaoJWT.Api.Configuracao
                                 ValidateLifetime = true,
                                 ValidateIssuerSigningKey = true,
                                 IssuerSigningKey = new SymmetricSecurityKey(key),
-                                ClockSkew = TimeSpan.Zero // evita tolerância extra de tempo
+                                ClockSkew = TimeSpan.Zero
                             };
 
-                            try
+                            // Valida e descriptografa o token
+                            ClaimsPrincipal principal = tokenHandler.ValidateToken(_token, validationParameters, out SecurityToken validatedToken);
+
+                            // Extrai claims
+                            var nome = principal.Identity?.Name ?? "";
+                            var roles = principal.Claims
+                                .Where(c => c.Type == ClaimTypes.Role)
+                                .Select(c => c.Value)
+                                .ToArray();
+
+                            var versoes = principal.Claims
+                                .Where(c => c.Type == "AcessoApi")
+                                .Select(c => c.Value)
+                                .ToArray();
+
+                            var usuario = new UsuarioDto
                             {
-                                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                                Nome = nome,
+                                Roles = roles,
+                                Versoes = versoes
+                            };
 
-                                // Extrai as claims do token
-                                var nome = principal.Identity?.Name;
-                                var roles = principal.Claims
-                                    .Where(c => c.Type == ClaimTypes.Role)
-                                    .Select(c => c.Value)
-                                    .ToArray();
-
-                                var versoes = principal.Claims
-                                    .Where(c => c.Type == "AcessoApi")
-                                    .Select(c => c.Value)
-                                    .ToArray();
-
-                                var resultdo = new UsuarioDto
-                                {
-                                    Nome = nome ?? "",
-                                    Roles = roles,
-                                    Versoes = versoes
-                                };
-                            }
-                            catch
-                            {
-                                throw new UnauthorizedAccessException(" null"); // Retorna null se o token for inválido ou expirado
-                            }
-
-
-                        }
-                        catch (SecurityTokenExpiredException)
-                        {
-                            throw new UnauthorizedAccessException("Token expirado.");
-                        }
-                        catch (SecurityTokenException ex)
-                        {
-                            throw new UnauthorizedAccessException("Token inválido.");
-                        }
-                        catch (Exception ex)
-                        {
-                            throw new UnauthorizedAccessException("Erro inesperado.");
+                            // Armazena o usuário decodificado no contexto (para uso posterior)
+                            context.Items["UsuarioLogado"] = usuario;
                         }
                     }
+                    catch (SecurityTokenExpiredException)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await context.Response.WriteAsJsonAsync(new { Codigo = 401, Mensagem = "Token expirado." });
+                        return;
+                    }
+                    catch (Exception)
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        await context.Response.WriteAsJsonAsync(new { Codigo = 401, Mensagem = "Token inválido." });
+                        return;
+                    }
+                    //Console.WriteLine("token");
+
+
+                    //if (!string.IsNullOrEmpty(_token))
+                    //{
+                    //    if (!_token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                    //    {
+                    //        throw new UnauthorizedAccessException("ResourceMensagem.BearerNaoInformado");
+                    //    }
+
+
+
+                    //    if (string.IsNullOrEmpty(_token))
+                    //        throw new UnauthorizedAccessException("Token é obrigatório.");
+
+                    //    var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+
+                    //    var tokenHandler = new JwtSecurityTokenHandler();
+                    //    try
+                    //    {
+                    //        var validationParameters = new TokenValidationParameters
+                    //        {
+                    //            ValidateIssuer = false,
+                    //            ValidateAudience = false,
+                    //            ValidateLifetime = true,
+                    //            ValidateIssuerSigningKey = true,
+                    //            IssuerSigningKey = new SymmetricSecurityKey(key),
+                    //            ClockSkew = TimeSpan.Zero // evita tolerância extra de tempo
+                    //        };
+
+                    //        try
+                    //        {
+                    //            var principal = tokenHandler.ValidateToken(_token, validationParameters, out SecurityToken validatedToken);
+
+                    //            // Extrai as claims do token
+                    //            var nome = principal.Identity?.Name;
+                    //            var roles = principal.Claims
+                    //                .Where(c => c.Type == ClaimTypes.Role)
+                    //                .Select(c => c.Value)
+                    //                .ToArray();
+
+                    //            var versoes = principal.Claims
+                    //                .Where(c => c.Type == "AcessoApi")
+                    //                .Select(c => c.Value)
+                    //                .ToArray();
+
+                    //            var resultdo = new UsuarioDto
+                    //            {
+                    //                Nome = nome ?? "",
+                    //                Roles = roles,
+                    //                Versoes = versoes
+                    //            };
+                    //        }
+                    //        catch
+                    //        {
+                    //            throw new UnauthorizedAccessException(" null"); // Retorna null se o token for inválido ou expirado
+                    //        }
+                    //    }
+                    //    catch (SecurityTokenExpiredException)
+                    //    {
+                    //        throw new UnauthorizedAccessException("Token expirado.");
+                    //    }
+                    //    catch (SecurityTokenException ex)
+                    //    {
+                    //        throw new UnauthorizedAccessException("Token inválido.");
+                    //    }
+                    //    catch (Exception ex)
+                    //    {
+                    //        throw new UnauthorizedAccessException("Erro inesperado.");
+                    //    }
+                    //}
                 }
-
-
             }
-
-            _PathString = context.Request.Path;
             try
             {
                 await _next(context);
@@ -158,25 +255,51 @@ namespace AutenticacaoJWT.Api.Configuracao
             catch (Exception ex)
             {
                 await TratamentoExceptionAsync(context, ex);
+ 
             }
-            HelperConsoleColor.Info($"MiddlewareError 2 - Resposta enviada para: {context.Response.StatusCode + " / " + _PathString}");
+            HelperConsoleColor.Info($"MiddlewareError 2 - Resposta enviada para: {context.Response.StatusCode + " / " + _url}");
         }
 
 
-        public TokenValidationParameters RegrasToken(string secret)
+
+        public ClaimsPrincipal? ValidarToken(string token)
         {
-            SymmetricSecurityKey _secretKey = new(Encoding.UTF8.GetBytes(secret));
-            return new TokenValidationParameters
+            try
             {
-                ValidateIssuerSigningKey = true, //Se definido como true, o sistema tentará validar a chave de assinatura
-                IssuerSigningKey = _secretKey, //Esta é a chave usada para verificar a assinatura dos tokens.
-                ValidateIssuer = false, //Se definido como false, o sistema não realizará essa validação quem emitiu o token.
-                ValidateAudience = false, //Se definido como false, o sistema não realizará essa validação quem o token é destinado.
-                RoleClaimType = ClaimTypes.Role, //Isso é útil quando você deseja mapear as funções dos usuários para reivindicações no token.
-                ClockSkew = TimeSpan.Zero, //Qualquer atraso ou adiantamento na hora do sistema pode resultar na rejeição do token.
-                ValidateLifetime = false, //Se definido como true, o swagger verificará se o token já expirou automaticamente.
-            };
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                return tokenHandler.ValidateToken(token, validationParameters, out _);
+            }
+            catch
+            {
+                return null;
+            }
         }
+
+        private string GetClaimValue(ClaimsPrincipal principal, string claimType)
+        {
+            return principal.FindFirst(claimType)?.Value ?? string.Empty;
+        }
+
+        private DateTime? ParseNullableDateTime(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return null;
+
+            return DateTime.TryParse(value, out var result) ? result : null;
+        }
+
 
         private async Task TratamentoExceptionAsync(HttpContext context, Exception exception)
         {
@@ -194,7 +317,7 @@ namespace AutenticacaoJWT.Api.Configuracao
 
             var httpCodigoErro = httpDicionarioCodigoErros.TryGetValue(exception.GetType(), out var code) ? code : StatusCodes.Status500InternalServerError;
 
-            string mensagemDoLog = await new ArquivoLog().IncluirLinha(_caminhoLog, exception, _PathString, "Erro inesperado");
+            string mensagemDoLog = await new ArquivoLog().IncluirLinha(_caminhoLog, exception, _url, "Erro inesperado");
 
 
             var response = new
@@ -209,13 +332,13 @@ namespace AutenticacaoJWT.Api.Configuracao
                 using (var scope = context.RequestServices.CreateScope())
                 {
                     var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                    MensagemErroInserirCommandRequest requestErro = new MensagemErroInserirCommandRequest() { Descricao = mensagemDoLog, Chamada = _PathString };
+                    MensagemErroInserirCommandRequest requestErro = new MensagemErroInserirCommandRequest() { Descricao = mensagemDoLog, Chamada = _url };
                     MensagemErroInserirCommandResponse responseErro = mediator.Send(requestErro, new CancellationToken()).Result;
                 }
             }
             catch (Exception mediatorEx)
             {
-                await new ArquivoLog().IncluirLinha(_caminhoLog, mediatorEx, _PathString, "Erro no CreateScope");
+                await new ArquivoLog().IncluirLinha(_caminhoLog, mediatorEx, _url, "Erro no CreateScope");
             }
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsJsonAsync(response);
