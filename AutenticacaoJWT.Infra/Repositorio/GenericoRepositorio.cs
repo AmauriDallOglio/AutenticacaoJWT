@@ -16,26 +16,26 @@ namespace AutenticacaoJWT.Infra.Repositorio
             _dbSet = _context.Set<T>();
         }
 
-        public async Task<T?> IncluirAsync(T entidade, CancellationToken cancellationToken)
+        public async Task<T> IncluirAsync(T entidade, CancellationToken cancellationToken)
         {
             try
             {
                 await _dbSet.AddAsync(entidade);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
                 return entidade;
             }
             catch (Exception ex)
             {
-                throw new Exception($"Não foi possível incluir o registro, operação cancelada! {ex.Message} / {ex.InnerException.Message} ");
+                throw new Exception($"Não foi possível incluir o registro, operação cancelada! {ex.Message} / {ex.InnerException?.Message??""} ");
             }
         }
 
-        public async Task<T?> EditarAsync(T entidade, CancellationToken cancellationToken)
+        public async Task<T> EditarAsync(T entidade, CancellationToken cancellationToken)
         {
             try
             {
                 _dbSet.Update(entidade);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
                 return entidade;
             }
             catch (Exception ex)
@@ -52,7 +52,7 @@ namespace AutenticacaoJWT.Infra.Repositorio
                 if (deletar.Context == null)
                     throw new Exception("Não foi possível deletar o registro!");
 
-                int gravar = await _context.SaveChangesAsync();
+                int gravar = await _context.SaveChangesAsync(cancellationToken);
                 if (gravar == 0)
                     throw new Exception("Não foi possível excluir o registro, operação cancelada!");
 
@@ -64,14 +64,15 @@ namespace AutenticacaoJWT.Infra.Repositorio
             }
         }
 
-        public async Task<T?> ObterPorIdAsync(Guid id, CancellationToken cancellationToken)
+        public async Task<T> ObterPorIdAsync(Guid id, CancellationToken cancellationToken)
         {
-            return await _dbSet.FindAsync(id);
+            var resultado = await _dbSet.FindAsync(id, cancellationToken);
+            return resultado;
         }
 
         public async Task<List<T>> ObterTodosAsync(CancellationToken cancellationToken)
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.ToListAsync(cancellationToken);
         }
     }
 }

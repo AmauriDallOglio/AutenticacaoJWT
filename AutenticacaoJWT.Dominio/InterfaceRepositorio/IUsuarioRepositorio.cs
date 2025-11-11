@@ -4,11 +4,12 @@ namespace AutenticacaoJWT.Dominio.InterfaceRepositorio
 {
     public interface IUsuarioRepositorio
     {
-        void AdicionarUsuario(Usuario novoUsuario);
-        List<Usuario> ObterTodosUsuarios();
-        Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha);
-        Usuario? ObterPorTokenRefresh(string refresh);
-        Task<Usuario> AtualizarAsync(Usuario usuarioAtualizado);
+        public void IncluirAsync(Usuario usuario, CancellationToken cancellationToken);
+        public Task<Usuario> AlterarAsync(Usuario usuario, CancellationToken cancellationToken);
+        public Task<List<Usuario>> ObterTodosUsuarioAsync(CancellationToken cancellationToken);
+        public Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha);
+        public Usuario? ObterPorTokenRefresh(string refresh);
+ 
 
     }
 }

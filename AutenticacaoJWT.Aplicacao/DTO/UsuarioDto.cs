@@ -4,8 +4,8 @@ namespace AutenticacaoJWT.Aplicacao.DTO
 {
     public class UsuarioDto
     {
-        public string Nome { get; set; } = "";
-        public string Senha { get; set; } = "";
+        public string Nome { get; set; } = string.Empty;
+        public string Senha { get; set; } = string.Empty;
         public string[] Roles { get; set; } = Array.Empty<string>();
         public string[] Versoes { get; set; } = Array.Empty<string>();
 

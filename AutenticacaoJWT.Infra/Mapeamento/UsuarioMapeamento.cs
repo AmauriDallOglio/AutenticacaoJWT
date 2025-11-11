@@ -9,43 +9,18 @@ namespace AutenticacaoJWT.Infra.Mapeamento
         public void Configure(EntityTypeBuilder<Usuario> builder)
         {
             builder.ToTable("Usuario");
-
             builder.HasKey(u => u.Id);
-
-            builder.Property(u => u.Id)
-                   .IsRequired()
-                   .HasColumnName("Id");
-
-            builder.Property(u => u.Nome)
-                   .IsRequired()
-                   .HasMaxLength(150);
-
-            builder.Property(u => u.Email)
-                   .IsRequired()
-                   .HasMaxLength(250);
-
-            builder.Property(u => u.Senha)
-                   .IsRequired()
-                   .HasMaxLength(255);
-
-            builder.Property(u => u.Token)
-                   .HasMaxLength(500);
-
-            builder.Property(u => u.Codigo)
-                   .HasMaxLength(50);
-
-            builder.Property(u => u.Aplicativo)
-                   .HasMaxLength(100);
-
+            builder.Property(u => u.Id).IsRequired().HasColumnName("Id");
+            builder.Property(u => u.Nome).IsRequired().HasMaxLength(150);
+            builder.Property(u => u.Email).IsRequired().HasMaxLength(250);
+            builder.Property(u => u.Senha).IsRequired().HasMaxLength(255);
+            builder.Property(u => u.Token).HasMaxLength(500);
+            builder.Property(u => u.Codigo).HasMaxLength(50);
+            builder.Property(u => u.Aplicativo).HasMaxLength(100);
             builder.Property(u => u.UltimoAcesso);
-
-            builder.Property(u => u.DataCadastro)
-                   .IsRequired();
-
+            builder.Property(u => u.DataCadastro).IsRequired();
             builder.Property(u => u.DataAlteracao);
-
-            builder.Property(u => u.Refresh)
-                   .HasMaxLength(512);
+            builder.Property(u => u.Refresh).HasMaxLength(512);
 
         }
 

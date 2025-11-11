@@ -45,16 +45,25 @@ namespace AutenticacaoJWT.Infra.Repositorio
         }
 
     
-        public void AdicionarUsuario(Usuario novoUsuario)
+        public async void IncluirAsync(Usuario usuario, CancellationToken cancellationToken)
         {
-  
-                _context.UsuarioDb.Add(novoUsuario);
+            await _context.UsuarioDb.AddAsync(usuario, cancellationToken);
+       
+        }
+
+        public async Task<Usuario> AlterarAsync(Usuario usuario, CancellationToken cancellationToken)
+        {
+            var update = _context.Update(usuario);
+            var retorno = await _context.SaveChangesAsync( cancellationToken);
+            return usuario;
 
         }
 
-        public List<Usuario> ObterTodosUsuarios()
+
+        public async Task<List<Usuario>> ObterTodosUsuarioAsync(CancellationToken cancellationToken)
         {
-            return _context.UsuarioDb.ToList();
+            var resultado = await _context.UsuarioDb.ToListAsync(cancellationToken);
+            return resultado;
         }
 
         public async Task<Usuario?> ObterUsuarioPorEmailSenhaAsync(string email, string senha)
@@ -72,13 +81,6 @@ namespace AutenticacaoJWT.Infra.Repositorio
         }
 
 
-        public async Task<Usuario> AtualizarAsync(Usuario usuario)
-        {
-            var update = _context.Update(usuario);
-            var retorno = _context.SaveChangesAsync();
-            return usuario;
-
-        }
 
     }
 }

@@ -2,9 +2,9 @@
 {
     public class UsuarioToken
     {
-        public string Email { get; set; }
-        public string Nome { get; set; }
-        public string Refresh { get; set; }
-        public string Permissions { get; set; }
+        public string Email { get; set; } = string.Empty;
+        public string Nome { get; set; } = string.Empty;
+        public string Refresh { get; set; } = string.Empty;
+        public string Permissions { get; set; } = string.Empty;
     }
 }

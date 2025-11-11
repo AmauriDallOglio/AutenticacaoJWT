@@ -28,8 +28,23 @@ namespace AutenticacaoJWT.Aplicacao.Servico
             return _secretKey;
         }
 
+        private byte[] DerivarChavePersonalizada(string email, string refresh)
+        {
+            // Combina a chave mestre com informações únicas do usuário
+            string baseString = $"{_secretKey}:{email}:{refresh}";
+            using var sha256 = SHA256.Create();
+            return sha256.ComputeHash(Encoding.UTF8.GetBytes(baseString));
+        }
+
+
         public string GerarJwtToken(Usuario usuario)
         {
+
+            //var userKey = DerivarChavePersonalizada(usuario.Email, usuario.Refresh);
+            //var securityKey = new SymmetricSecurityKey(userKey);
+            //var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+
             var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 

@@ -1,10 +1,8 @@
 ﻿using AutenticacaoJWT.Api.Configuracao;
 using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
 using AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken;
-using AutenticacaoJWT.Aplicacao.DTO;
 using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
-using AutenticacaoJWT.Infra.Repositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -97,9 +95,9 @@ namespace AutenticacaoJWT.Api.Controllers
         [LogController]
         [AllowAnonymous]
         [HttpPost("RefreshToken")]
-        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequest refreshRequest)
+        public async Task<IActionResult> RefreshToken([FromQuery] RefreshTokenRequest refreshRequest, CancellationToken cancellationToken)
         {
-            RefreshTokenResponse refreshResponse = _refreshTokenHandler.GerarRefresh(refreshRequest);
+            RefreshTokenResponse refreshResponse = _refreshTokenHandler.GerarRefresh(refreshRequest, cancellationToken);
             return Ok(refreshResponse);
         }
 

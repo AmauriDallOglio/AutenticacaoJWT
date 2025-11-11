@@ -15,7 +15,7 @@ namespace AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken
             _ITokenConfiguracaoServico = tokenConfiguracaoServico;
         }
 
-        public RefreshTokenResponse GerarRefresh(RefreshTokenRequest refreshRequest)
+        public RefreshTokenResponse GerarRefresh(RefreshTokenRequest refreshRequest, CancellationToken cancellationToken)
         {
             Usuario? usuario = _IUsuarioRepositorio.ObterPorTokenRefresh(refreshRequest.Refresh);
             if (usuario is null)
@@ -27,7 +27,7 @@ namespace AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken
             var refresh = _ITokenConfiguracaoServico.GerarRefresh();
 
             usuario.AtualizaRefresh(refresh);
-            _IUsuarioRepositorio.AtualizarAsync(usuario);
+            _IUsuarioRepositorio.AlterarAsync(usuario, cancellationToken);
 
             RefreshTokenResponse tokenResponse = new RefreshTokenResponse().ConverteRefresh(refresh);
 

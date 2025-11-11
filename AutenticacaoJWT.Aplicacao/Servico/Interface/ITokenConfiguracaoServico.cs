@@ -4,10 +4,10 @@ namespace AutenticacaoJWT.Aplicacao.Servico.Interface
 {
     public interface ITokenConfiguracaoServico
     {
-        byte[] CodigoChave();
-        string CodigoSecret();
-        string GerarJwtToken(Usuario usuario);
-        string GerarRefresh();
+        public byte[] CodigoChave();
+        public string CodigoSecret();
+        public string GerarJwtToken(Usuario usuario);
+        public string GerarRefresh();
 
     }
 }
