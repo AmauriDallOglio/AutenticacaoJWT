@@ -51,7 +51,7 @@ namespace AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken
                 new Claim("Aplicativo", usuario.Aplicativo ?? ""),
                 new Claim("DataCadastro", usuario.DataCadastro.ToString("o")), // formato ISO 8601
                 new Claim("UltimoAcesso", usuario.UltimoAcesso?.ToString("o") ?? ""),
-                new Claim("Permissions", "read,write") // exemplo de permissão
+                new Claim("Permissoes", "read,write") // exemplo de permissão
             };
 
             var tokenDescriptor = new SecurityTokenDescriptor
