@@ -13,7 +13,6 @@ namespace AutenticacaoJWT.Aplicacao.Configuracao
     {
         public static void RegistrarServicosInjecaoDependencia(IServiceCollection services)
         {
-
             services.AddScoped<GerartokenHandler>();
 
             services.AddScoped<RefreshTokenHandler>();

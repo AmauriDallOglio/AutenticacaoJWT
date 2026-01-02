@@ -200,6 +200,7 @@ namespace AutenticacaoJWT.Api.Configuracao
  
             }
             HelperConsoleColor.Info($"MiddlewareError 2 - Resposta enviada para: {context.Response.StatusCode + " / " + _url}");
+            await _next(context);
         }
 
 
