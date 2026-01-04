@@ -33,8 +33,8 @@ namespace AutenticacaoJWT.Api
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //app.UseMiddleware<ValidacaoMiddleware>();
-            app.UseMiddleware<AutorizacaoMiddleware>();
+            app.UseMiddleware<ValidacaoMiddleware>();
+            //app.UseMiddleware<AutorizacaoMiddleware>();
 
             app.MapControllers();
             app.Run();

@@ -53,57 +53,7 @@ namespace AutenticacaoJWT.Api.Configuracao
 
             try
             {
-                if (!string.IsNullOrEmpty(_token))
-                {
-                    try
-                    {
-                        var key = Encoding.UTF8.GetBytes("minha_chave_secreta_super_segura");
-                        var tokenHandler = new JwtSecurityTokenHandler();
-                        var validationParameters = new TokenValidationParameters
-                        {
-                            ValidateIssuerSigningKey = true,
-                            IssuerSigningKey = new SymmetricSecurityKey(key),
-                            ValidateIssuer = false,
-                            ValidateAudience = false,
-                            ValidateLifetime = true,
-                            ClockSkew = TimeSpan.Zero
-                        };
-
-                        // Valida e descriptografa o token
-                        ClaimsPrincipal? principal = tokenHandler.ValidateToken(_token, validationParameters, out SecurityToken validatedToken);
-
-                        // Extrai as claims e converte para o modelo
-                        UsuarioSessaoDto usuarioToken = new UsuarioSessaoDto
-                        {
-                            IdUsuario = Guid.Parse(GetClaimValue(principal, "Id")),
-                            Email = GetClaimValue(principal, "Email"),
-                            Nome = GetClaimValue(principal, "Nome"),
-                            Codigo = GetClaimValue(principal, "Codigo"),
-                            Aplicativo = GetClaimValue(principal, "Aplicativo"),
-                            Permissoes = principal.FindFirst("Permissoes")?.Value.Split(',') ?? [],
-                            DataCadastro = DateTime.Parse(GetClaimValue(principal, "DataCadastro")),
-                            UltimoAcesso = ParseNullableDateTime(GetClaimValue(principal, "UltimoAcesso"))
-                        };
-                    }
-                    catch (SecurityTokenExpiredException ex)
-                    {
-                         _logger.LogError(ex, $"Token expirado: {ex.Message}");
-
-                        throw;
-
-                    }
-                    catch (SecurityTokenException ex)
-                    {
-                        _logger.LogError(ex, $"Token inválido: {ex.Message}");
-                        throw;
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, $"Erro ao validar token: {ex.Message}");
-                        throw;
-                    }
-                }
-
+    
 
                 if (context.Request.Method == HttpMethods.Get)
                 {
@@ -230,18 +180,7 @@ namespace AutenticacaoJWT.Api.Configuracao
             }
         }
 
-        private string GetClaimValue(ClaimsPrincipal principal, string claimType)
-        {
-            return principal.FindFirst(claimType)?.Value ?? string.Empty;
-        }
-
-        private DateTime? ParseNullableDateTime(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return null;
-
-            return DateTime.TryParse(value, out var result) ? result : null;
-        }
+   
 
 
         private async Task TratamentoExceptionAsync(HttpContext context, Exception exception)
