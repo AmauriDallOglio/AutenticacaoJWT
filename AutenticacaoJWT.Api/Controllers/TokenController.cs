@@ -1,14 +1,8 @@
-﻿using AutenticacaoJWT.Api.Configuracao;
-using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
+﻿using AutenticacaoJWT.Aplicacao.Controller.Token.GerarToken;
 using AutenticacaoJWT.Aplicacao.Controller.Token.RefreshToken;
-using AutenticacaoJWT.Dominio.Entidade;
 using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 
 namespace AutenticacaoJWT.Api.Controllers
 {
@@ -16,9 +10,6 @@ namespace AutenticacaoJWT.Api.Controllers
     [Route("api/[controller]")]
     public class TokenController : ControllerBase
     {
-
-
-
         public readonly IUsuarioRepositorio _IUsuarioRepositorio;
         private readonly GerartokenHandler _gerartokenHandler;
         private readonly RefreshTokenHandler _refreshTokenHandler;
@@ -40,13 +31,8 @@ namespace AutenticacaoJWT.Api.Controllers
         }
 
 
-
-
-        // =====================================================
-        // ROTA PÚBLICA (SEM TOKEN)
-        // =====================================================
         [AllowAnonymous]
-        [HttpGet("publica")]
+        [HttpGet("Publica")]
         public IActionResult Publica()
         {
             return Ok(new
@@ -56,11 +42,8 @@ namespace AutenticacaoJWT.Api.Controllers
             });
         }
 
-        // =====================================================
-        // ROTA PROTEGIDA (COM TOKEN)
-        // =====================================================
         [Authorize]
-        [HttpGet("protegida")]
+        [HttpGet("Protegida")]
         public IActionResult Protegida()
         {
             return Ok(new

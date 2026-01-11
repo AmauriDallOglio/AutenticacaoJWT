@@ -1,5 +1,4 @@
-﻿using AutenticacaoJWT.Dominio.Entidade;
-using AutenticacaoJWT.Dominio.InterfaceRepositorio;
+﻿using AutenticacaoJWT.Dominio.InterfaceRepositorio;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AutenticacaoJWT.Api.Controllers
@@ -14,8 +13,8 @@ namespace AutenticacaoJWT.Api.Controllers
             _usuarioRepositorio = usuarioRepositorio;
         }
 
-        [HttpGet("perfil")]
-        public IActionResult Perfil()
+        [HttpGet("PerfilLogado")]
+        public IActionResult PerfilLogado()
         {
             var user = HttpContext.User;
 
@@ -32,27 +31,5 @@ namespace AutenticacaoJWT.Api.Controllers
                 Permissoes = permissoes
             });
         }
-
-
-        //[HttpPost("Adicionar")]
-        //public IActionResult AdicionarUsuario([FromBody] Usuario novoUsuario)
-        //{
-        //    try
-        //    {
-        //        _usuarioRepositorio.AdicionarUsuario(novoUsuario);
-        //        return Ok(new { Message = "Usuário adicionado com sucesso!" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest(new { Error = ex.Message });
-        //    }
-        //}
-
-        //[HttpGet("ObterTodos")]
-        //public IActionResult ObterTodosUsuarios()
-        //{
-        //    return Ok(_usuarioRepositorio.ObterTodosUsuarios());
-        //}
     }
-
 }
